@@ -7,6 +7,9 @@
 
 class DCCAnalyzerSettings;
 
+enum eFrameState { FSTATE_INIT, FSTATE_PREAMBLE, FSTATE_SBADDR, FSTATE_ADDR, FSTATE_SBEADR, FSTATE_EADR, FSTATE_SBCMD, FSTATE_CMD, FSTATE_SBDAT,
+	FSTATE_DATA, FSTATE_SBACC, FSTATE_ACC, FSTATE_SBCHK, FSTATE_CHK };
+
 class ANALYZER_EXPORT DCCAnalyzer : public Analyzer
 {
 public:
@@ -26,7 +29,10 @@ public:
 #pragma warning( disable : 4251 ) //warning C4251: 'SerialAnalyzer::<...>' : class <...> needs to have dll-interface to be used by clients of class
 
 protected: //functions
-    void ComputeSampleOffsets();
+	UINT LookaheadNextHBit(U64 *nSample);
+	UINT GetNextHBit(U64 *nSample);
+	UINT GetNextBit(U64 *nSample);
+	void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 Flags, U64 Data1, U64 Data2);
 
 protected: //vars
     std::auto_ptr< DCCAnalyzerSettings > mSettings;
@@ -44,7 +50,10 @@ protected: //vars
     U32 mEndOfStopBitOffset;
     BitState mBitLow;
     BitState mBitHigh;
-
+	UINT mMin1hbit;
+	UINT mMax1hbit;
+	UINT mMin0hbit;
+	UINT mMax0hbit;
 #pragma warning( pop )
 };
 

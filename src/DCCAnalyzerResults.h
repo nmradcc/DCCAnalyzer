@@ -3,10 +3,11 @@
 
 #include <AnalyzerResults.h>
 
-#define FRAMING_ERROR_FLAG ( 1 << 0 )
-#define CHECKSUM_ERROR_FLAG ( 1 << 1 )
-#define MP_MODE_ADDRESS_FLAG ( 1 << 2 )
-enum eFrameType { FRAME_PREAMBLE, FRAME_SBIT, FRAME_ADDR, FRAME_CMD, FRAME_DATA, FRAME_CHECKSUM };
+#define BIT_ERROR_FLAG ( 1 << 1 )
+#define CHECKSUM_ERROR_FLAG ( 1 << 2 )
+#define FRAMING_ERROR_FLAG (1 << 3)
+enum eFrameType { FRAME_ERR, FRAME_PREAMBLE, FRAME_SBIT, FRAME_ADDR, FRAME_EADDR, FRAME_CMD, FRAME_ACC, FRAME_DATA, FRAME_CHECKSUM };
+const unsigned int MIN_PEAMBLE_LEN = 28; // mon. count of half bits in preamble
 
 class DCCAnalyzer;
 class DCCAnalyzerSettings;
@@ -25,10 +26,13 @@ public:
     virtual void GenerateTransactionTabularText(U64 transaction_id, DisplayBase display_base);
 
 protected: //functions
-
+	virtual char * ParseCommand(U8 cCmd);
+	virtual char * ParseAccessory(U8 cCmd);
 protected:  //vars
     DCCAnalyzerSettings *mSettings;
     DCCAnalyzer *mAnalyzer;
+private:
+	char sParseBuf[128];
 };
 
 #endif //SERIAL_ANALYZER_RESULTS

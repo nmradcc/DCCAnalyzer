@@ -7,14 +7,16 @@ typedef unsigned int UINT;
 
 class DCCAnalyzerSettings;
 
-enum DCC_Cmd_t {CMD_Reset, CMD_End};
+enum DCC_Cmd_t {CMD_Reset, CMD_1, CMD_2, CMD_3, CMD_End};
 const U32 DCC_PREAMBLE_BITS = 18;
 const double HB_1 = 58.0;
 const double HB_0 = 116.0;
 
-const U8 CmdList[][2] = { 
+const U8 CmdList[][2] = {
 	{ 0, 0 }, // CMD_Reset
-	{ 1, 0 }
+	{ 1, 0 },
+	{ 2, 1 },
+	{ 3, 2 }
 };
 
 class DCCSimulationDataGenerator
@@ -40,9 +42,11 @@ protected:
 protected: //DCC specific
 	void GenerateByte(U8 nVal);
 	void CreateDCCPreamble(U32 nBits);
-	void CreateDCCPacket(U32 Address, int cmd, U8 DCC_Data[4]);
+	void CreateDCCPacket(U32 Address, int cmd, U8 *DCC_Data);
     ClockGenerator mClockGenerator;
     SimulationChannelDescriptor mDCCSimulationData;  //if we had more than one channel to simulate, they would need to be in an array
+	U64 mHBit1Samples;
+	U64 mHBit0Samples;
 };
 
 #endif //UNIO_SIMULATION_DATA_GENERATOR
