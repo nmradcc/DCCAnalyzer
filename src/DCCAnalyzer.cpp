@@ -57,9 +57,10 @@ UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
 // Framing and other error return 2;
 UINT	DCCAnalyzer::GetNextBit(U64 *nSample)
 {
+	U64 nTemp = *nSample;
 	UINT nHBit1 = GetNextHBit(nSample);
 	UINT nHBit2 = GetNextHBit(nSample);
-	if (nHBit1 > 1 || nHBit2 > 1)
+	if ((nHBit1 > 1) || (nHBit2 > 1) || ((*nSample - nTemp) > mMaxBitLen))
 		return BIT_ERROR_FLAG;
 	else if (nHBit1 != nHBit2)
 		return FRAMING_ERROR_FLAG;
@@ -78,16 +79,35 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 	mResults->CommitResults();
 }
 
+void DCCAnalyzer::Setup()
+{
+	mSampleRateHz = GetSampleRate();
+	mMaxBitLen = 12000 * (mSampleRateHz / 1000000);
+	switch (mSettings->mMode)
+	{
+	case DCCAnalyzerEnums::MODE_CS:
+		mMin1hbit = 55 * (mSampleRateHz / 1000000);
+		mMax1hbit = 61 * (mSampleRateHz / 1000000);
+		mMin0hbit = 95 * (mSampleRateHz / 1000000);
+		mMax0hbit = 9900 * (mSampleRateHz / 1000000);
+		break;
+	case DCCAnalyzerEnums::MODE_DECODER:
+	case DCCAnalyzerEnums::MODE_SERVICE:
+	default:
+		mMin1hbit = 52 * (mSampleRateHz / 1000000);
+		mMax1hbit = 64 * (mSampleRateHz / 1000000);
+		mMin0hbit = 90 * (mSampleRateHz / 1000000);
+		mMax0hbit = 10000 * (mSampleRateHz / 1000000);
+		break;
+	}
 
+	mDCC = GetAnalyzerChannelData(mSettings->mInputChannel);
+
+}
 
 void DCCAnalyzer::WorkerThread()
 {
-	mSampleRateHz = GetSampleRate();
-	mMin1hbit = 55 * (mSampleRateHz / 1000000);
-	mMax1hbit = 61 * (mSampleRateHz / 1000000);
-	mMin0hbit = 95 * (mSampleRateHz / 1000000);
-	mMax0hbit = 9900 * (mSampleRateHz / 1000000);
-	mDCC = GetAnalyzerChannelData(mSettings->mInputChannel);
+	Setup();
 	U32 nHBitCnt = 0;
 	U8  nHBitVal = 0;
 	U32 nBits = 0;
@@ -112,7 +132,7 @@ void DCCAnalyzer::WorkerThread()
 				break;
 			case 1:
 				++nHBitCnt;
-				if (nHBitCnt == MIN_PEAMBLE_LEN)
+				if (nHBitCnt == (mSettings->mPreambleBits * 2))
 					ef = FSTATE_PREAMBLE;
 				break;
 			default: // error frame

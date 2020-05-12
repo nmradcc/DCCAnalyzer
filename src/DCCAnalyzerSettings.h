@@ -6,8 +6,8 @@
 
 namespace DCCAnalyzerEnums
 {
-    enum Mode { Normal, Service };
-	enum FrameType {TYPE_Preamble, TYPE_Addr, TYPE_CmdByte, TYPE_CmdData, TYPE_Checksum};
+	enum eAnalyzerMode { MODE_DECODER, MODE_CS, MODE_SERVICE };
+	enum FrameType { TYPE_Preamble, TYPE_Addr, TYPE_CmdByte, TYPE_CmdData, TYPE_Checksum };
 };
 
 class DCCAnalyzerSettings : public AnalyzerSettings
@@ -23,9 +23,14 @@ public:
     virtual const char *SaveSettings();
 
     Channel mInputChannel;
+	U64		mPreambleBits;
+	DCCAnalyzerEnums::eAnalyzerMode mMode;
 
 protected:
     std::auto_ptr< AnalyzerSettingInterfaceChannel >    mInputChannelInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceInteger >    mPreambleBitsInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceNumberList >    mModeInterface;
+
 };
 
 #endif //SERIAL_ANALYZER_SETTINGS

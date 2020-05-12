@@ -7,15 +7,32 @@
 #define CHANNEL_NAME "Track1"
 
 DCCAnalyzerSettings::DCCAnalyzerSettings()
-    :   mInputChannel(UNDEFINED_CHANNEL)
+    :   mInputChannel(UNDEFINED_CHANNEL),
+	mPreambleBits(14),
+	mMode(DCCAnalyzerEnums::MODE_DECODER)
 {
     mInputChannelInterface.reset(new AnalyzerSettingInterfaceChannel());
     mInputChannelInterface->SetTitleAndTooltip(CHANNEL_NAME, "DCC Track 1");
     mInputChannelInterface->SetChannel(mInputChannel);
+	AddInterface(mInputChannelInterface.get());
 
-    AddInterface(mInputChannelInterface.get());
+	mPreambleBitsInterface.reset(new AnalyzerSettingInterfaceInteger());
+	mPreambleBitsInterface->SetTitleAndTooltip("Preamble Size", "Minimum preamble bit length");
+	mPreambleBitsInterface->SetMin(8);
+	mPreambleBitsInterface->SetMax(18);
+	mPreambleBitsInterface->SetInteger(mPreambleBits);
+	AddInterface(mPreambleBitsInterface.get());
 
-    AddExportOption(0, "Export as text/csv file");
+	mModeInterface.reset(new AnalyzerSettingInterfaceNumberList());
+	mModeInterface->SetTitleAndTooltip("Mode", "Analysis Mode: Decoder, Command Station, Service Mode");
+	mModeInterface->ClearNumbers();
+	mModeInterface->AddNumber(DCCAnalyzerEnums::MODE_DECODER, "Decoder", "Set decoder bit and packet timing");
+	mModeInterface->AddNumber(DCCAnalyzerEnums::MODE_CS, "Command Station", "Set command station bit and packet timing");
+	mModeInterface->AddNumber(DCCAnalyzerEnums::MODE_SERVICE, "Service Mode", "Set Service Mode packets and timing");
+	mModeInterface->SetNumber(mMode);
+	AddInterface(mModeInterface.get());
+	
+	AddExportOption(0, "Export as text/csv file");
     AddExportExtension(0, "Text file", "txt");
     AddExportExtension(0, "CSV file", "csv");
 
@@ -30,16 +47,19 @@ DCCAnalyzerSettings::~DCCAnalyzerSettings()
 bool DCCAnalyzerSettings::SetSettingsFromInterfaces()
 {
     mInputChannel = mInputChannelInterface->GetChannel();
-
+	mPreambleBits = mPreambleBitsInterface->GetInteger();
+	mMode = (DCCAnalyzerEnums::eAnalyzerMode)(int)mModeInterface->GetNumber();
     ClearChannels();
     AddChannel(mInputChannel, CHANNEL_NAME, true);
 
-    return true;
+	return true;
 }
 
 void DCCAnalyzerSettings::UpdateInterfacesFromSettings()
 {
     mInputChannelInterface->SetChannel(mInputChannel);
+	mPreambleBitsInterface->SetInteger(mPreambleBits);
+	mModeInterface->SetNumber(mMode);
 }
 
 void DCCAnalyzerSettings::LoadSettings(const char *settings)
@@ -53,7 +73,10 @@ void DCCAnalyzerSettings::LoadSettings(const char *settings)
         AnalyzerHelpers::Assert("DCCAnalyzer: Provided with a settings string that doesn't belong to us;");
     }
 
+
     text_archive >> mInputChannel;
+	text_archive >> mPreambleBits;
+	text_archive >> *(int *)&mMode;
 
     ClearChannels();
     AddChannel(mInputChannel, CHANNEL_NAME, true);
@@ -67,6 +90,9 @@ const char *DCCAnalyzerSettings::SaveSettings()
 
     text_archive << "DCCAnalyzer";
     text_archive << mInputChannel;
+	text_archive << mPreambleBits;
+	text_archive << (int)mMode;
+
 
     return SetReturnString(text_archive.GetString());
 }

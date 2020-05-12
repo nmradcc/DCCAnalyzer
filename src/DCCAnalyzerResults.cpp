@@ -19,6 +19,8 @@ DCCAnalyzerResults::~DCCAnalyzerResults()
 
 char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 {
+	U8 cSpeed = 0;
+	char sSpeedTxt[10] = "";
 	switch (cCmd >> 4)
 	{
 	case 0: // Decoder control
@@ -87,11 +89,39 @@ char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 
 	case 4:
 	case 5:
-		sprintf(sParseBuf, "Speed FWD %s %d", (cCmd & 0x10) ? "ON" : "OFF", (cCmd & 0x0F));
+		cSpeed = ((cCmd & 0x0F) << 1) | ((cCmd >> 4) & 0x01);
+		switch (cSpeed)
+		{
+		case 0:
+		case 1:
+			sprintf(sSpeedTxt, "STOP");
+			break;
+		case 3:
+		case 4:
+			sprintf(sSpeedTxt, "ESTOP");
+			break;
+		default:
+			sprintf(sSpeedTxt, "%d", cSpeed);
+		}
+		sprintf(sParseBuf, "Speed REV %s", sSpeedTxt);
 		break;
 	case 6:
 	case 7:
-		sprintf(sParseBuf, "Speed REV %s %d", (cCmd & 0x10) ? "ON" : "OFF", (cCmd & 0x0F));
+		cSpeed = ((cCmd & 0x0F) << 1) | ((cCmd >> 4) & 0x01);
+		switch (cSpeed)
+		{
+		case 0:
+		case 1:
+			sprintf(sSpeedTxt, "STOP");
+			break;
+		case 3:
+		case 4:
+			sprintf(sSpeedTxt, "ESTOP");
+			break;
+		default:
+			sprintf(sSpeedTxt, "%d", cSpeed - 3);
+		}
+		sprintf(sParseBuf, "Speed FWD %s", sSpeedTxt);
 		break;
 	case 8:
 	case 9:
@@ -121,11 +151,40 @@ char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 			sprintf(sParseBuf, "RESERVED");
 		}
 		break;
-	case 14:
-		sprintf(sParseBuf,"CV Short %0x");
+	case 14: //CV access long form
+		switch ((cCmd >> 2) & 0x03)
+		{
+		case 0:
+			sprintf(sParseBuf, "CV Long RESERVED");
+			break;
+		case 1:
+			sprintf(sParseBuf, "CV Long Verify %x",(cCmd & 0x03));
+			break;
+		case 2:
+			sprintf(sParseBuf, "CV Long BITS %x", (cCmd & 0x03));
+			break;
+		case 3:
+			sprintf(sParseBuf, "CV Long Write %x", (cCmd & 0x03));
+		}
 		break;
-	case 15:
-		sprintf(sParseBuf, "CV Long");
+	case 15: //CV access short form
+		switch (cCmd & 0x0F)
+		{
+		case 0:
+			sprintf(sParseBuf, "CV Short N/A");
+			break;
+		case 2:
+			sprintf(sParseBuf, "CV Short Accelerate");
+			break;
+		case 3:
+			sprintf(sParseBuf, "CV Short Decelerate");
+			break;
+		case 9:
+			sprintf(sParseBuf, "Decoder Lock");
+			break;
+		default:
+			sprintf(sParseBuf, "CV Short RESERVED");
+		}
 		break;
 	default:
 		sprintf(sParseBuf, "------");

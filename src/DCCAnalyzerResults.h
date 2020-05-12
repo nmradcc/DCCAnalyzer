@@ -7,7 +7,6 @@
 #define CHECKSUM_ERROR_FLAG ( 1 << 2 )
 #define FRAMING_ERROR_FLAG (1 << 3)
 enum eFrameType { FRAME_ERR, FRAME_PREAMBLE, FRAME_SBIT, FRAME_ADDR, FRAME_EADDR, FRAME_CMD, FRAME_ACC, FRAME_DATA, FRAME_CHECKSUM };
-const unsigned int MIN_PEAMBLE_LEN = 28; // mon. count of half bits in preamble
 
 class DCCAnalyzer;
 class DCCAnalyzerSettings;

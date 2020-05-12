@@ -32,7 +32,8 @@ protected: //functions
 	UINT LookaheadNextHBit(U64 *nSample);
 	UINT GetNextHBit(U64 *nSample);
 	UINT GetNextBit(U64 *nSample);
-	void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 Flags, U64 Data1, U64 Data2);
+	void PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 Flags, U64 Data1, U64 Data2);
+	void Setup();
 
 protected: //vars
     std::auto_ptr< DCCAnalyzerSettings > mSettings;
@@ -54,6 +55,7 @@ protected: //vars
 	UINT mMax1hbit;
 	UINT mMin0hbit;
 	UINT mMax0hbit;
+	UINT mMaxBitLen;
 #pragma warning( pop )
 };
 
