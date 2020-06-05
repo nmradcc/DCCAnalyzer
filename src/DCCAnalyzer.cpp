@@ -39,7 +39,7 @@ UINT	DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
 
 UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
 {
-	UINT nSampNumber = *nSample;
+	U64 nSampNumber = *nSample;
 	mDCC->AdvanceToNextEdge();
 	*nSample = mDCC->GetSampleNumber();
 	UINT	nHBitLen = mDCC->GetSampleNumber() - nSampNumber;
@@ -82,22 +82,24 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 void DCCAnalyzer::Setup()
 {
 	mSampleRateHz = GetSampleRate();
-	mMaxBitLen = 12000 * (mSampleRateHz / 1000000);
+	double dMaxCorrection = 1.0 + mSettings->mCalPPM / 1000000.0;
+	double dMinCorrection = 1.0 - mSettings->mCalPPM / 1000000.0;
+	mMaxBitLen = round(12000.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
 	switch (mSettings->mMode)
 	{
 	case DCCAnalyzerEnums::MODE_CS:
-		mMin1hbit = 55 * (mSampleRateHz / 1000000);
-		mMax1hbit = 61 * (mSampleRateHz / 1000000);
-		mMin0hbit = 95 * (mSampleRateHz / 1000000);
-		mMax0hbit = 9900 * (mSampleRateHz / 1000000);
+		mMin1hbit = round(55.0 * (mSampleRateHz / 1000000) * dMinCorrection);
+		mMax1hbit = round(61.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
+		mMin0hbit = round(95.0 * (mSampleRateHz / 1000000) * dMinCorrection);
+		mMax0hbit = round(9900.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
 		break;
 	case DCCAnalyzerEnums::MODE_DECODER:
 	case DCCAnalyzerEnums::MODE_SERVICE:
 	default:
-		mMin1hbit = 52 * (mSampleRateHz / 1000000);
-		mMax1hbit = 64 * (mSampleRateHz / 1000000);
-		mMin0hbit = 90 * (mSampleRateHz / 1000000);
-		mMax0hbit = 10000 * (mSampleRateHz / 1000000);
+		mMin1hbit = round(52.0 * (mSampleRateHz / 1000000) * dMinCorrection);
+		mMax1hbit = round(64.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
+		mMin0hbit = round(90.0 * (mSampleRateHz / 1000000) * dMinCorrection);
+		mMax0hbit = round(10000.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
 		break;
 	}
 
@@ -196,17 +198,23 @@ void DCCAnalyzer::WorkerThread()
 				if (nBits == 8)
 				{
 					nChecksum ^= nVal;
-					PostFrame(nFrameStart, nCurSample, FRAME_ADDR, 0, nVal);
-					mResults->AddMarker(nFrameStart, AnalyzerResults::Dot, mSettings->mInputChannel);
+					if (mSettings->mMode == DCCAnalyzerEnums::MODE_SERVICE)	{
+						PostFrame(nFrameStart, nCurSample, FRAME_SVC, 0, nVal);
+						mResults->AddMarker(nFrameStart, AnalyzerResults::Dot, mSettings->mInputChannel);
+						ef = FSTATE_SBDAT;
+					} else {
+						PostFrame(nFrameStart, nCurSample, FRAME_ADDR, 0, nVal);
+						mResults->AddMarker(nFrameStart, AnalyzerResults::Dot, mSettings->mInputChannel);
+						if ((nVal <= 0x7F) || (nVal == 0xFF))
+							ef = FSTATE_SBCMD;
+						else if ((nVal >= 0x80) && (nVal < 0xBF))
+							ef = FSTATE_SBACC;
+						else if ((nVal >= 0xC0) && (nVal < 0xE8))
+							ef = FSTATE_SBEADR;
+						else
+							ef = FSTATE_INIT; // undefined
+					}
 					ReportProgress(nCurSample);
-					if (nVal <= 0x7F || (nVal == 0xFF))
-						ef = FSTATE_SBCMD;
-					else if ((nVal >= 0x80) && (nVal < 0xBF))
-						ef = FSTATE_SBACC;
-					else if ((nVal >= 0xC0) && (nVal < 0xE8))
-						ef = FSTATE_SBEADR;
-					else 
-						ef = FSTATE_INIT; // undefined
 					nFrameStart = nCurSample + 1;
 				}
 				break;

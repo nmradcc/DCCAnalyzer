@@ -7,9 +7,10 @@
 #define CHANNEL_NAME "Track1"
 
 DCCAnalyzerSettings::DCCAnalyzerSettings()
-    :   mInputChannel(UNDEFINED_CHANNEL),
+	: mInputChannel(UNDEFINED_CHANNEL),
 	mPreambleBits(14),
-	mMode(DCCAnalyzerEnums::MODE_DECODER)
+	mMode(DCCAnalyzerEnums::MODE_DECODER),
+	mCalPPM(0)
 {
     mInputChannelInterface.reset(new AnalyzerSettingInterfaceChannel());
     mInputChannelInterface->SetTitleAndTooltip(CHANNEL_NAME, "DCC Track 1");
@@ -19,7 +20,7 @@ DCCAnalyzerSettings::DCCAnalyzerSettings()
 	mPreambleBitsInterface.reset(new AnalyzerSettingInterfaceInteger());
 	mPreambleBitsInterface->SetTitleAndTooltip("Preamble Size", "Minimum preamble bit length");
 	mPreambleBitsInterface->SetMin(8);
-	mPreambleBitsInterface->SetMax(18);
+	mPreambleBitsInterface->SetMax(22);
 	mPreambleBitsInterface->SetInteger(mPreambleBits);
 	AddInterface(mPreambleBitsInterface.get());
 
@@ -32,6 +33,13 @@ DCCAnalyzerSettings::DCCAnalyzerSettings()
 	mModeInterface->SetNumber(mMode);
 	AddInterface(mModeInterface.get());
 	
+	mCalPPMInterface.reset(new AnalyzerSettingInterfaceInteger());
+	mCalPPMInterface->SetTitleAndTooltip("Calibration Factor [+/-PPM]", "bit timing limits error correction");
+	mCalPPMInterface->SetMin(-1000000);
+	mCalPPMInterface->SetMax(1000000);
+	mCalPPMInterface->SetInteger(mCalPPM);
+	AddInterface(mCalPPMInterface.get());
+
 	AddExportOption(0, "Export as text/csv file");
     AddExportExtension(0, "Text file", "txt");
     AddExportExtension(0, "CSV file", "csv");
@@ -49,6 +57,7 @@ bool DCCAnalyzerSettings::SetSettingsFromInterfaces()
     mInputChannel = mInputChannelInterface->GetChannel();
 	mPreambleBits = mPreambleBitsInterface->GetInteger();
 	mMode = (DCCAnalyzerEnums::eAnalyzerMode)(int)mModeInterface->GetNumber();
+	mCalPPM = mCalPPMInterface->GetInteger();
     ClearChannels();
     AddChannel(mInputChannel, CHANNEL_NAME, true);
 
@@ -60,6 +69,7 @@ void DCCAnalyzerSettings::UpdateInterfacesFromSettings()
     mInputChannelInterface->SetChannel(mInputChannel);
 	mPreambleBitsInterface->SetInteger(mPreambleBits);
 	mModeInterface->SetNumber(mMode);
+	mCalPPMInterface->SetInteger(mCalPPM);
 }
 
 void DCCAnalyzerSettings::LoadSettings(const char *settings)
@@ -77,6 +87,7 @@ void DCCAnalyzerSettings::LoadSettings(const char *settings)
     text_archive >> mInputChannel;
 	text_archive >> mPreambleBits;
 	text_archive >> *(int *)&mMode;
+	text_archive >> mCalPPM;
 
     ClearChannels();
     AddChannel(mInputChannel, CHANNEL_NAME, true);
@@ -92,7 +103,9 @@ const char *DCCAnalyzerSettings::SaveSettings()
     text_archive << mInputChannel;
 	text_archive << mPreambleBits;
 	text_archive << (int)mMode;
+	text_archive << mCalPPM;
 
 
     return SetReturnString(text_archive.GetString());
 }
+ 

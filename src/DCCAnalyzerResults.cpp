@@ -17,6 +17,26 @@ DCCAnalyzerResults::~DCCAnalyzerResults()
 {
 }
 
+
+char * DCCAnalyzerResults::ParseServiceMode(U8 cCmd, bool bLongPacket = true)
+{
+	switch ((cCmd >> 2) & 0x03)
+	{
+	case 0:
+	case 1:
+		sprintf(sParseBuf, "Verify AH:%x", cCmd & 0x03);
+		break;
+	case 2:
+		sprintf(sParseBuf, "Bits AH:%x", cCmd & 0x03);
+		break;
+	case 3:
+		sprintf(sParseBuf, "Write AH:%x", cCmd & 0x03);
+		break;
+	}
+
+	return sParseBuf;
+}
+
 char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 {
 	U8 cSpeed = 0;
@@ -101,7 +121,7 @@ char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 			sprintf(sSpeedTxt, "ESTOP");
 			break;
 		default:
-			sprintf(sSpeedTxt, "%d", cSpeed);
+			sprintf(sSpeedTxt, "%d", cSpeed - 3);
 		}
 		sprintf(sParseBuf, "Speed REV %s", sSpeedTxt);
 		break;
@@ -258,6 +278,12 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		AddResultString("K");
 		AddResultString("Acc");
 		snprintf(result_str, sizeof(result_str), "Accessory: %#02x %s", frame.mData1, ParseAccessory(frame.mData1));
+		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
+		break;
+	case FRAME_SVC:
+		AddResultString("T");
+		AddResultString("Svc");
+		snprintf(result_str, sizeof(result_str), "Service: %s", ParseServiceMode(frame.mData1));
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_DATA:

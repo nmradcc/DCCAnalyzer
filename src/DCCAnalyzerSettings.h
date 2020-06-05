@@ -25,11 +25,13 @@ public:
     Channel mInputChannel;
 	U64		mPreambleBits;
 	DCCAnalyzerEnums::eAnalyzerMode mMode;
+	int		mCalPPM;
 
 protected:
     std::auto_ptr< AnalyzerSettingInterfaceChannel >    mInputChannelInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceInteger >    mPreambleBitsInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList >    mModeInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceInteger >    mCalPPMInterface;
 
 };
 
