@@ -27,7 +27,7 @@ void DCCAnalyzer::SetupResults()
 
 UINT	DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
 {
-	UINT nHBitLen = mDCC->GetSampleOfNextEdge() - *nSample;
+	UINT nHBitLen = (UINT)(mDCC->GetSampleOfNextEdge() - *nSample);
 	*nSample = mDCC->GetSampleOfNextEdge();
 	if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
@@ -42,7 +42,7 @@ UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
 	U64 nSampNumber = *nSample;
 	mDCC->AdvanceToNextEdge();
 	*nSample = mDCC->GetSampleNumber();
-	UINT	nHBitLen = mDCC->GetSampleNumber() - nSampNumber;
+	UINT	nHBitLen = (UINT)(mDCC->GetSampleNumber() - nSampNumber);
 	if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
 	else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
@@ -60,7 +60,7 @@ UINT	DCCAnalyzer::GetNextBit(U64 *nSample)
 	U64 nTemp = *nSample;
 	UINT nHBit1 = GetNextHBit(nSample);
 	UINT nHBit2 = GetNextHBit(nSample);
-	if ((nHBit1 > 1) || (nHBit2 > 1) || ((*nSample - nTemp) > mMaxBitLen))
+	if ((nHBit1 > 1) || (nHBit2 > 1) || ((UINT)(*nSample - nTemp) > mMaxBitLen))
 		return BIT_ERROR_FLAG;
 	else if (nHBit1 != nHBit2)
 		return FRAMING_ERROR_FLAG;
