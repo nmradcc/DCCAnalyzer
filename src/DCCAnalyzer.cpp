@@ -1,6 +1,7 @@
 #include "DCCAnalyzer.h"
 #include "DCCAnalyzerSettings.h"
 #include <AnalyzerChannelData.h>
+#include <math.h>
 
 DCCAnalyzer::DCCAnalyzer()
     : Analyzer(),
@@ -161,7 +162,7 @@ void DCCAnalyzer::WorkerThread()
 				nHBitVal = GetNextHBit(&nCurSample); // get next hbit
 				++nHBitCnt;
 				break;
-			deafult:
+			default:
 				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
 				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
 				mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);

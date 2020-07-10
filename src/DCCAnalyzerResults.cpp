@@ -239,7 +239,7 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 	case FRAME_PREAMBLE:
 		AddResultString("P");
 		AddResultString("Preamble");
-		snprintf(result_str, sizeof(result_str), "Preamble bits: %u ", frame.mData1);
+		snprintf(result_str, sizeof(result_str), "Preamble bits: %llu ", frame.mData1);
 		AddResultString(result_str,framing_error?"f":"",checksum_error?"x":"");
 		break;
 	case FRAME_SBIT:
@@ -258,26 +258,26 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 			sprintf(result_str, "Address: Idle ");
 			break;
 		default:
-			sprintf(result_str, "Address: %#02x ", frame.mData1);
+			sprintf(result_str, "Address: %#02llx ", frame.mData1);
 		}
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_EADDR:
 		AddResultString("L");
 		AddResultString("LAddr");
-		snprintf(result_str, sizeof(result_str), "LAddress: %#02x ", frame.mData1);
+		snprintf(result_str, sizeof(result_str), "LAddress: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_CMD:
 		AddResultString("C");
 		AddResultString("Cmd");
-		snprintf(result_str, sizeof(result_str), "Command: %#02x %s", frame.mData1, ParseCommand(frame.mData1));
+		snprintf(result_str, sizeof(result_str), "Command: %#02llx %s", frame.mData1, ParseCommand(frame.mData1));
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_ACC:
 		AddResultString("K");
 		AddResultString("Acc");
-		snprintf(result_str, sizeof(result_str), "Accessory: %#02x %s", frame.mData1, ParseAccessory(frame.mData1));
+		snprintf(result_str, sizeof(result_str), "Accessory: %#02llx %s", frame.mData1, ParseAccessory(frame.mData1));
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_SVC:
@@ -289,13 +289,13 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 	case FRAME_DATA:
 		AddResultString("D");
 		AddResultString("Data");
-		snprintf(result_str, sizeof(result_str), "Data: %#02x ", frame.mData1);
+		snprintf(result_str, sizeof(result_str), "Data: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_CHECKSUM:
 		AddResultString("X");
 		AddResultString("Chk");
-		snprintf(result_str, sizeof(result_str), "Checksum: %#02x ", frame.mData1);
+		snprintf(result_str, sizeof(result_str), "Checksum: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	default:;
