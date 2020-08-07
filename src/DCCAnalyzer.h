@@ -26,7 +26,7 @@ public:
 
 
 #pragma warning( push )
-#pragma warning( disable : 4251 ) //warning C4251: 'SerialAnalyzer::<...>' : class <...> needs to have dll-interface to be used by clients of class
+#pragma warning( disable : 4251 ) //warning C4251: 'DCCAnalyzer::<...>' : class <...> needs to have dll-interface to be used by clients of class
 
 protected: //functions
 	UINT LookaheadNextHBit(U64 *nSample);

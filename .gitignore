@@ -1,0 +1,8 @@
+.DS_Store
+Linux/*.o
+Linux/*.so
+Mac/*.o
+Mac/*.dylib
+vs2013/Release
+
+
