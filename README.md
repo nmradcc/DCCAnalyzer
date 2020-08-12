@@ -1,4 +1,4 @@
-# DCCLAParser
+# DCCAnalyzer
 DCC Parser extensions for the Kingst LA2016 Logic Analyzer. Intended to assist NMRA DCC conformance testing.
 
 Currently supports 3 modes of operation: Command Station, Decoder and Service Mode.
