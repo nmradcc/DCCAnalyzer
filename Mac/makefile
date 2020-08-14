@@ -1,4 +1,5 @@
 TARGET  := libDCC.dylib
+ADIR	:= /Applications/KingstVIS.app/Contents/Resources/Analyzer
 
 LINK := -L "../../lib/Mac" -lAnalyzer
 
@@ -16,7 +17,8 @@ $(TARGET) : $(HFILe) $(SRC)
 	$(CC) $(SHARE) $(TARGET) $(OBJ) $(LINK)
 
 install:
-	cp $(TARGET) /Applications/KingstVIS.app/Contents/Resources/Analyzer
+	cp $(TARGET) $(ADIR)
 
 setup:
+	cd $(ADIR)
 	install_name_tool -change "libAnalyzer.dylib" "@executable_path/libAnalyzer.dylib" "$(TARGET)"
