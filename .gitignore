@@ -1,8 +1,8 @@
 .DS_Store
-Linux/*.o
-Linux/*.so
-Mac/*.o
-Mac/*.dylib
-vs2013/Release
+LA2016/Linux/*.o
+LA2016/Linux/*.so
+LA2016/Mac/*.o
+LA2016/Mac/*.dylib
+LA2016/vs2013/Release
 
 
