@@ -1,12 +1,12 @@
 TARGET  := libDCC.dylib
 ADIR	:= /Applications/KingstVIS.app/Contents/Resources/Analyzer
 
-LINK := -L "../../lib/Mac" -lAnalyzer
+LINK := -L "../lib/Mac" -lAnalyzer
 
 CC       := clang++
-HFILE    := ../../inc/*.h
+HFILE    := ../inc/*.h
 SRC      := ../../src/*.cpp
-INC      := -I ../../inc/
+INC      := -I ../inc/
 CXXFLAGS := -Wall -O2 -c
 FPIC     := -fPIC
 SHARE    := -dynamiclib -o

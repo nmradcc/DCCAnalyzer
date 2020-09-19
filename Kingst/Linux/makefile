@@ -1,11 +1,11 @@
 TARGET  := libDCC.so
 
-LINK := -L "../../lib/Linux" -lAnalyzer
+LINK := -L "../lib/Linux" -lAnalyzer
 
 CC       := g++
-HFILE    := ../../inc/*.h
+HFILE    := ../inc/*.h
 SRC      := ../../src/*.cpp
-INC      := -I ../../inc/
+INC      := -I ../inc/
 CXXFLAGS := -Wall -O2 -c
 FPIC     := -fPIC
 SHARE    := -shared -o
