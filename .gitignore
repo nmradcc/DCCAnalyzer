@@ -4,5 +4,9 @@ Kingst/Linux/*.so
 Kingst/Mac/*.o
 Kingst/Mac/*.dylib
 Kingst/vs2013/Release
+Kingst/vs2013/Debug
+Kingst/vs2013/.vs
+Kingst/vs2013/*.sln
+Kingst/vs2013/*.user
 
 

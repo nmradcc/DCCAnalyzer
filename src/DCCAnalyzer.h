@@ -10,7 +10,7 @@ class DCCAnalyzerSettings;
 enum eFrameState { FSTATE_INIT, FSTATE_PREAMBLE, FSTATE_SBADDR, FSTATE_ADDR, FSTATE_SBEADR, FSTATE_EADR, FSTATE_SBCMD, FSTATE_CMD, FSTATE_SBDAT,
 	FSTATE_DATA, FSTATE_SBACC, FSTATE_ACC, FSTATE_SVC, FSTATE_SBCHK, FSTATE_CHK };
 
-class ANALYZER_EXPORT DCCAnalyzer : public Analyzer
+class ANALYZER_EXPORT DCCAnalyzer : public Analyzer2
 {
 public:
     DCCAnalyzer();
@@ -63,4 +63,4 @@ extern "C" ANALYZER_EXPORT const char *__cdecl GetAnalyzerName();
 extern "C" ANALYZER_EXPORT Analyzer *__cdecl CreateAnalyzer();
 extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer(Analyzer *analyzer);
 
-#endif //SERIAL_ANALYZER_H
+#endif //DCC_ANALYZER_H

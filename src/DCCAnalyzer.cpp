@@ -4,7 +4,7 @@
 #include <math.h>
 
 DCCAnalyzer::DCCAnalyzer()
-    : Analyzer(),
+    : Analyzer2(),
       mSettings(new DCCAnalyzerSettings()),
       mSimulationInitilized(false)
 {

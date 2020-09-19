@@ -19,16 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzerResults.cpp" />
-    <ClCompile Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzerSettings.cpp" />
-    <ClCompile Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCSimulationDataGenerator.cpp" />
+    <ClCompile Include="..\..\src\DCCAnalyzer.cpp" />
+    <ClCompile Include="..\..\src\DCCAnalyzerResults.cpp" />
+    <ClCompile Include="..\..\src\DCCAnalyzerSettings.cpp" />
+    <ClCompile Include="..\..\src\DCCSimulationDataGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzer.h" />
-    <ClInclude Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzerResults.h" />
-    <ClInclude Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCAnalyzerSettings.h" />
-    <ClInclude Include="..\..\..\..\Kingst\KingstVIS_Analyzer_SDK\src\DCCSimulationDataGenerator.h" />
+    <ClInclude Include="..\..\src\DCCAnalyzer.h" />
+    <ClInclude Include="..\..\src\DCCAnalyzerResults.h" />
+    <ClInclude Include="..\..\src\DCCAnalyzerSettings.h" />
+    <ClInclude Include="..\..\src\DCCSimulationDataGenerator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B41F877A-D3CE-4D6A-AB1A-3021EF949539}</ProjectGuid>
