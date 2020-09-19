@@ -1,11 +1,12 @@
 TARGET  := libDCC.so
+SDK_DIR := ../../../../Kingst/KingstVIS_Analyzer_SDK
 
-LINK := -L "../lib/Linux" -lAnalyzer
+LINK := -L "$(SDK_DIR)/lib/Linux" -lAnalyzer
 
 CC       := g++
-HFILE    := ../inc/*.h
+HFILE    := $(SDK_DIR)/inc/*.h
 SRC      := ../../src/*.cpp
-INC      := -I ../inc/
+INC      := -I $(SDK_DIR)/inc/
 CXXFLAGS := -Wall -O2 -c
 FPIC     := -fPIC
 SHARE    := -shared -o
