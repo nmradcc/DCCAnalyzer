@@ -8,5 +8,13 @@ Kingst/vs2013/Debug
 Kingst/vs2013/.vs
 Kingst/vs2013/*.sln
 Kingst/vs2013/*.user
-
+Saleae/release
+Saleae/debug
+Saleae/Visual Studio/x86/Release
+Saleae/Visual Studio/x86/Debug
+Saleae/Visual Studio/x64/Release
+Saleae/Visual Studio/x64/Debug
+Saleae/Visual Studio/.vs
+Saleae/Visual Studio/*.sln
+Saleae/Visual Studio/*.user
 
