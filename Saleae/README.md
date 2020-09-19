@@ -1,4 +1,12 @@
-# Saleae Analyzer SDK Sample Analyzer
+# Saleae Analyzer
+
+This build area currently only support the Logic2 version of the Saleae Analyzer software.
+Make sure that the AnalyzerSDK version you have cloned from Github is on the correct branch (which is 'alpha' at this time)
+
+
+Saleae Logic Analyzer SDK notes (from their SampleAnalyzer example):
+
+
 The Saleae Analyzer SDK is used to create custom plugins for the Saleae Logic software. These plugins are used to decode protocol data from captured waveforms.
 
 The libraries required to build a custom analyzer are stored in another git repository, located here:
@@ -36,3 +44,4 @@ To build on Linux or OSX, run the build_analyzer.py script. The compiled librari
 To debug on Windows, please first review the section titled `Debugging an Analyzer with Visual Studio` in the included `doc/Analyzer SDK Setup.md` document.
 
 Unfortunately, debugging is limited on Windows to using an older copy of the Saleae Logic software that does not support the latest hardware devices. Details are included in the above document.
+
