@@ -4,7 +4,7 @@ LINK := -L "../../lib/Linux" -lAnalyzer
 
 CC       := g++
 HFILE    := ../../inc/*.h
-SRC      := ../src/*.cpp
+SRC      := ../../src/*.cpp
 INC      := -I ../../inc/
 CXXFLAGS := -Wall -O2 -c
 FPIC     := -fPIC

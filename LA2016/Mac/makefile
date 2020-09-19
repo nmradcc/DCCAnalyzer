@@ -5,7 +5,7 @@ LINK := -L "../../lib/Mac" -lAnalyzer
 
 CC       := clang++
 HFILE    := ../../inc/*.h
-SRC      := ../src/*.cpp
+SRC      := ../../src/*.cpp
 INC      := -I ../../inc/
 CXXFLAGS := -Wall -O2 -c
 FPIC     := -fPIC
