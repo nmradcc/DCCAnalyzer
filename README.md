@@ -13,9 +13,9 @@ Use the following directory structure to build for either of these environments:
 ProjectRootDirectory  
 +------nmradcc (issue the command 'git clone https://github.com/nmradcc/DCCAnalyzer.git' here and it will put the DCCAnalyzer directory here:)  
 |---------------DCCAnalzer  
-|-------------------+--------src (common source files for DCCAnalyzer)  
-|-------------------+--------Kingst (directory to build for the Kingst Analyzer)  
-|-------------------+--------Saleae (directory to build for the Saleae Analyzer)  
+|--------------------------src (common source files for DCCAnalyzer)  
+|--------------------------Kingst (directory to build for the Kingst Analyzer)  
+|--------------------------Saleae (directory to build for the Saleae Analyzer)  
 +------Kingst (copy the directory KingstVIS\_Analyzer\_SDK when you download it from the Kingst website)  
 |-------------KinstVIS\_Analyzer\_SDK  
 +------Saleae (issue the command 'git clone https://github.com/saleae/AnalyzerSDK.git' here and it will put the AnalyzerSDK directory here)  
