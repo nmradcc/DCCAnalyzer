@@ -77,7 +77,44 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 	frame.mType = ft;
 	frame.mFlags = Flags;
 	mResults->AddFrame(frame);
-	mResults->CommitResults();
+
+// This is a new feature for the Saleae Analyzer that enables the Python debugging interface
+
+#ifdef SALEAE_FRAME_V2
+
+    FrameV2 framev2;
+
+                            // Flags,       ERROR_FLAG
+    switch (ft)
+    {
+    case FRAME_ERR:         // nBitVal
+        break;
+    case FRAME_PREAMBLE:    // 0,           nHBitVal/2
+        break;
+    case FRAME_SBIT:        // 0
+        break;
+    case FRAME_ADDR:        // 0,           nVal
+        break;
+    case FRAME_EADDR:       // 0,           nVal
+        break;
+    case FRAME_CMD:         // 0,           nVal
+        break;
+    case FRAME_ACC:         // 0,           nVal
+        break;
+    case FRAME_SVC:         // 0,           nVal
+        break;
+    case FRAME_DATA:        // 0,           nVal
+        break;
+    case FRAME_CHECKSUM:    // nCurSample,  nVal
+        break;
+    default:
+        break;
+    }
+
+#endif
+
+    mResults->CommitResults();
+
 }
 
 void DCCAnalyzer::Setup()

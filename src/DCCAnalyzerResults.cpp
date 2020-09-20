@@ -304,7 +304,7 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 
 void DCCAnalyzerResults::GenerateExportFile(const char *file, DisplayBase display_base, U32 /*export_type_user_id*/)
 {
-/*
+
 	//export_type_user_id is only important if we have more than one export type.
     std::stringstream ss;
 
@@ -314,151 +314,103 @@ void DCCAnalyzerResults::GenerateExportFile(const char *file, DisplayBase displa
 
     void *f = AnalyzerHelpers::StartFile(file);
 
-//Normal case -- not MP mode.
-        ss << "Time [s],Value,Parity Error,Framing Error" << std::endl;
+    ss << "Time [s], Data" << std::endl;
 
-        for (U32 i = 0; i < num_frames; i++) {
-            Frame frame = GetFrame(i);
+    for (U32 i = 0; i < num_frames; i++) {
+        Frame frame = GetFrame(i);
 
-            //static void GetTimeString( U64 sample, U64 trigger_sample, U32 sample_rate_hz, char* result_string, U32 result_string_max_length );
-            char time_str[128];
-            AnalyzerHelpers::GetTimeString(frame.mStartingSampleInclusive, trigger_sample, sample_rate, time_str, 128);
+        U64 packet_id = GetPacketContainingFrameSequential(i);
 
-            char number_str[128];
-           // AnalyzerHelpers::GetNumberString(frame.mData1, display_base, mSettings->mBitsPerTransfer, number_str, 128);
+        char time_str[128];
+        AnalyzerHelpers::GetTimeString(frame.mStartingSampleInclusive, trigger_sample, sample_rate, time_str, 128);
 
-//            ss << time_str << "," << number_str;
-			ss << time_str << "," << frame.mData1;
+        char number_str[128];
+        AnalyzerHelpers::GetNumberString(frame.mData1, display_base, 8, number_str, 128);
 
-            if ((frame.mFlags & PARITY_ERROR_FLAG) != 0) {
-                ss << ",Error,";
-            } else {
-                ss << ",,";
-            }
-
-            if ((frame.mFlags & FRAMING_ERROR_FLAG) != 0) {
-                ss << "Error";
-            }
-
-            ss << std::endl;
-
-            AnalyzerHelpers::AppendToFile((U8 *)ss.str().c_str(), ss.str().length(), f);
-            ss.str(std::string());
-
-            if (UpdateExportProgressAndCheckForCancel(i, num_frames) == true) {
-                AnalyzerHelpers::EndFile(f);
-                return;
-            }
+        if (packet_id == INVALID_RESULT_INDEX) {
+            ss << time_str << "," << "" << ",";
+        } else {
+            ss << time_str << "," << number_str << ",";
         }
-    } else {
-        //MP mode.
-        ss << "Time [s],Packet ID,Address,Data,Framing Error" << std::endl;
-        U64 address = 0;
 
-        for (U32 i = 0; i < num_frames; i++) {
-            Frame frame = GetFrame(i);
+        if ((frame.mFlags & FRAMING_ERROR_FLAG) != 0) {
+            ss << "Error";
+        }
 
-            if ((frame.mFlags & MP_MODE_ADDRESS_FLAG) != 0) {
-                address = frame.mData1;
-                continue;
-            }
+        ss << std::endl;
 
-            U64 packet_id = GetPacketContainingFrameSequential(i);
+        AnalyzerHelpers::AppendToFile((U8 *)ss.str().c_str(), ss.str().length(), f);
+        ss.str(std::string());
 
-            //static void GetTimeString( U64 sample, U64 trigger_sample, U32 sample_rate_hz, char* result_string, U32 result_string_max_length );
-            char time_str[128];
-            AnalyzerHelpers::GetTimeString(frame.mStartingSampleInclusive, trigger_sample, sample_rate, time_str, 128);
-
-            char address_str[128];
-            AnalyzerHelpers::GetNumberString(address, display_base, mSettings->mBitsPerTransfer - 1, address_str, 128);
-
-            char number_str[128];
-            AnalyzerHelpers::GetNumberString(frame.mData1, display_base, mSettings->mBitsPerTransfer - 1, number_str, 128);
-            if (packet_id == INVALID_RESULT_INDEX) {
-                ss << time_str << "," << "" << "," << address_str << "," << number_str << ",";
-            } else {
-                ss << time_str << "," << packet_id << "," << address_str << "," << number_str << ",";
-            }
-
-            if ((frame.mFlags & FRAMING_ERROR_FLAG) != 0) {
-                ss << "Error";
-            }
-
-            ss << std::endl;
-
-            AnalyzerHelpers::AppendToFile((U8 *)ss.str().c_str(), ss.str().length(), f);
-            ss.str(std::string());
-
-            if (UpdateExportProgressAndCheckForCancel(i, num_frames) == true) {
-                AnalyzerHelpers::EndFile(f);
-                return;
-            }
+        if (UpdateExportProgressAndCheckForCancel(i, num_frames) == true) {
+            AnalyzerHelpers::EndFile(f);
+            return;
         }
     }
 
     UpdateExportProgressAndCheckForCancel(num_frames, num_frames);
     AnalyzerHelpers::EndFile(f);
-*/
+
 }
 
 void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase display_base)
 {
-/*
-    ClearTabularText();
-    Frame frame = GetFrame(frame_index);
-
-    bool framing_error = false;
-    if ((frame.mFlags & FRAMING_ERROR_FLAG) != 0) {
-        framing_error = true;
-    }
-
-    bool parity_error = false;
-    if ((frame.mFlags & PARITY_ERROR_FLAG) != 0) {
-        parity_error = true;
-    }
-
-    U32 bits_per_transfer = mSettings->mBitsPerTransfer;
-    if (mSettings->mSerialMode != SerialAnalyzerEnums::Normal) {
-        bits_per_transfer--;
-    }
-
-    char number_str[128];
-    AnalyzerHelpers::GetNumberString(frame.mData1, display_base, bits_per_transfer, number_str, 128);
 
     char result_str[128];
+    U8 ft;
 
-    //MP mode address case:
-    bool mp_mode_address_flag = false;
-    if ((frame.mFlags & MP_MODE_ADDRESS_FLAG) != 0) {
-        mp_mode_address_flag = true;
+    ClearTabularText();
+    Frame frame = GetFrame(frame_index);
+    bool framing_error = ((frame.mFlags & FRAMING_ERROR_FLAG) != 0);
+    bool checksum_error = ((frame.mFlags & CHECKSUM_ERROR_FLAG) != 0);
+    ft = frame.mType;
 
-        if (framing_error == false) {
-            snprintf(result_str, sizeof(result_str), "Address: %s", number_str);
-            AddTabularText(result_str);
-
-        } else {
-            snprintf(result_str, sizeof(result_str), "Address: %s (framing error)", number_str);
-            AddTabularText(result_str);
+    switch (ft)
+    {
+    case FRAME_PREAMBLE:
+        snprintf(result_str, sizeof(result_str), "Preamble bits: %llu", frame.mData1);
+        break;
+    case FRAME_SBIT:
+        snprintf(result_str, sizeof(result_str), "S");
+        break;
+    case FRAME_ADDR:
+        switch (frame.mData1)
+        {
+        case 0:
+            snprintf(result_str, sizeof(result_str), "Address: Broadcast"); 
+            break;
+        case 0xFF:
+            snprintf(result_str, sizeof(result_str), "Address: Idle");
+            break;
+        default:
+            snprintf(result_str, sizeof(result_str), "Address: %#02llx", frame.mData1);
         }
-        return;
+        break;
+    case FRAME_EADDR:
+        snprintf(result_str, sizeof(result_str), "LAddress: %#02llx", frame.mData1);
+        break;
+    case FRAME_CMD:
+        snprintf(result_str, sizeof(result_str), "Command: %#02llx %s", frame.mData1, ParseCommand(frame.mData1));
+        break;
+    case FRAME_ACC:
+        snprintf(result_str, sizeof(result_str), "Accessory: %#02llx %s", frame.mData1, ParseAccessory(frame.mData1));
+        break;
+    case FRAME_SVC:
+        snprintf(result_str, sizeof(result_str), "Service: %s", ParseServiceMode(frame.mData1));
+        break;
+    case FRAME_DATA:
+        snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
+        break;
+    case FRAME_CHECKSUM:
+        snprintf(result_str, sizeof(result_str), "Checksum: %#02llx", frame.mData1);
+        break;
+    default:
+        break;
     }
+    AddTabularText(result_str);
+    snprintf(result_str, sizeof(result_str), " %s %s", framing_error ? "f" : "", checksum_error ? "x" : "");
+    AddTabularText(result_str);
 
-    //normal case:
-    if ((parity_error == true) || (framing_error == true)) {
-        if (parity_error == true && framing_error == false) {
-            snprintf(result_str, sizeof(result_str), "%s (parity error)", number_str);
-        } else if (parity_error == false && framing_error == true) {
-            snprintf(result_str, sizeof(result_str), "%s (framing error)", number_str);
-        } else {
-            snprintf(result_str, sizeof(result_str), "%s (framing error & parity error)", number_str);
-        }
-
-        AddTabularText(result_str);
-
-    } else {
-        AddTabularText(number_str);
-    }
-*/
 }
 
 void DCCAnalyzerResults::GeneratePacketTabularText(U64 /*packet_id*/, DisplayBase /*display_base*/)    //unrefereced vars commented out to remove warnings.
