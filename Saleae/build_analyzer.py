@@ -44,10 +44,10 @@ include_paths = [ "../../../Saleae/AnalyzerSDK/include" ]
 link_paths = [ "../../../Saleae/AnalyzerSDK/lib" ]
 link_dependencies = [ "-lAnalyzer" ] #refers to libAnalyzer.dylib or libAnalyzer.so
 
-debug_compile_flags = "-O0 -w -c -fpic -g"
-release_compile_flags = "-O3 -w -c -fpic"
-#debug_compile_flags = "-O0 -w -c -fpic -g -DSALEAE_FRAME_V2"
-#release_compile_flags = "-O3 -w -c -fpic -DSALEAE_FRAME_V2"
+#debug_compile_flags = "-O0 -w -c -fpic -g"
+#release_compile_flags = "-O3 -w -c -fpic"
+debug_compile_flags = "-O0 -w -c -fpic -g -DLOGIC2 -DSALEAE_FRAME_V2"
+release_compile_flags = "-O3 -w -c -fpic -DLOGIC2 -DSALEAE_FRAME_V2"
 
 def run_command(cmd):
     "Display cmd, then run it in a subshell, raise if there's an error"

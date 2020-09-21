@@ -87,29 +87,46 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
                             // Flags,       ERROR_FLAG
     switch (ft)
     {
-    case FRAME_ERR:         // nBitVal
-        break;
     case FRAME_PREAMBLE:    // 0,           nHBitVal/2
+        framev2.AddString("type", "preamble");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_SBIT:        // 0
+        framev2.AddString("type", "sbit");
         break;
     case FRAME_ADDR:        // 0,           nVal
+        framev2.AddString("type", "addr");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_EADDR:       // 0,           nVal
+        framev2.AddString("type", "eaddr");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_CMD:         // 0,           nVal
+        framev2.AddString("type", "cmd");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_ACC:         // 0,           nVal
+        framev2.AddString("type", "acc");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_SVC:         // 0,           nVal
+        framev2.AddString("type", "svc");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_DATA:        // 0,           nVal
+        framev2.AddString("type", "data");
+        framev2.AddByte("data", (U8)Data1);
         break;
     case FRAME_CHECKSUM:    // nCurSample,  nVal
+        framev2.AddString("type", "checksum");
+        framev2.AddByte("data", (U8)Data1);
         break;
     default:
         break;
     }
+
+    mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
 
 #endif
 
