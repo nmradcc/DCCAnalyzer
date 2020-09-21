@@ -116,12 +116,12 @@ char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 		case 1:
 			sprintf(sSpeedTxt, "STOP");
 			break;
+		case 2:
 		case 3:
-		case 4:
 			sprintf(sSpeedTxt, "ESTOP");
 			break;
 		default:
-			sprintf(sSpeedTxt, "%d", cSpeed - 3);
+			sprintf(sSpeedTxt, "%d", cSpeed - DCC_BASELINE_PACKET_SPEED_OFFSET);
 		}
 		sprintf(sParseBuf, "Speed REV %s", sSpeedTxt);
 		break;
@@ -134,12 +134,12 @@ char * DCCAnalyzerResults::ParseCommand(U8 cCmd)
 		case 1:
 			sprintf(sSpeedTxt, "STOP");
 			break;
+		case 2:
 		case 3:
-		case 4:
 			sprintf(sSpeedTxt, "ESTOP");
 			break;
 		default:
-			sprintf(sSpeedTxt, "%d", cSpeed - 3);
+			sprintf(sSpeedTxt, "%d", cSpeed - DCC_BASELINE_PACKET_SPEED_OFFSET);
 		}
 		sprintf(sParseBuf, "Speed FWD %s", sSpeedTxt);
 		break;

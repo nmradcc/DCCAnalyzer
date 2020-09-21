@@ -5,6 +5,9 @@
 #include "DCCAnalyzerResults.h"
 #include "DCCSimulationDataGenerator.h"
 
+// This is the value subtracted from the cSpeed value to print the actual speed step
+#define DCC_BASELINE_PACKET_SPEED_OFFSET 3
+
 class DCCAnalyzerSettings;
 
 enum eFrameState { FSTATE_INIT, FSTATE_PREAMBLE, FSTATE_SBADDR, FSTATE_ADDR, FSTATE_SBEADR, FSTATE_EADR, FSTATE_SBCMD, FSTATE_CMD, FSTATE_SBDAT,
