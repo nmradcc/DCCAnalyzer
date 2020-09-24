@@ -17,4 +17,5 @@ Saleae/Visual Studio/x64/Debug
 Saleae/Visual Studio/.vs
 Saleae/Visual Studio/*.sln
 Saleae/Visual Studio/*.user
+src/Debug
 

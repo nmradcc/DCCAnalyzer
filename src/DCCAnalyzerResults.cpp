@@ -242,10 +242,10 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		snprintf(result_str, sizeof(result_str), "Preamble bits: %llu ", frame.mData1);
 		AddResultString(result_str,framing_error?"f":"",checksum_error?"x":"");
 		break;
-	case FRAME_SBIT:
-		AddResultString("S");
-		AddResultString("S ", framing_error ? "f" : "", checksum_error ? "x" : "");
-		break;
+//	case FRAME_SBIT:
+//		AddResultString("S");
+//		AddResultString("S ", framing_error ? "f" : "", checksum_error ? "x" : "");
+//		break;
 	case FRAME_ADDR:
 		AddResultString("A");
 		AddResultString("Addr");
@@ -298,7 +298,8 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		snprintf(result_str, sizeof(result_str), "Checksum: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
-	default:;
+	default:
+        break;
 	}
 }
 
@@ -370,9 +371,9 @@ void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase d
     case FRAME_PREAMBLE:
         snprintf(result_str, sizeof(result_str), "Preamble bits: %llu", frame.mData1);
         break;
-    case FRAME_SBIT:
-        snprintf(result_str, sizeof(result_str), "S");
-        break;
+//    case FRAME_SBIT:
+//        snprintf(result_str, sizeof(result_str), "S");
+//        break;
     case FRAME_ADDR:
         switch (frame.mData1)
         {
