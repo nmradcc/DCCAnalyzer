@@ -9,7 +9,7 @@ than the required acceptance limits for decoders. Hence, Decoder mode allows tes
 command station conformance tests, to ensure decoders conform and accept those signals.
   Service Mode is included to allow testing S-9.2.3 commands and service mode programming, while having commands that overlap 
 with main operation commands to be correctly parsed.
-  An error correction parameter was added to compensate for timing errors discovered during evaluation of the LA2016 Logic Analyzer. 
+  An error correction parameter was added to compensate for timing errors discovered during evaluation of the Digital Logic Analyzer. 
   Analysis conducted by the testing team showed consistent clock frequency errors as well as sampling errors, affecting both normal and 
   stretched signal bits. the correction factor laxes or hardens both minimum and maximum bit and half-bit limits to compensate for the
   errors. A positive value extends the limits, while a negative value narrows them.  
