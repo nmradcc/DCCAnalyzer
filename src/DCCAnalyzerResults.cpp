@@ -406,6 +406,7 @@ void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase d
         snprintf(result_str, sizeof(result_str), "Checksum: %#02llx", frame.mData1);
         break;
     default:
+		snprintf(result_str, sizeof(result_str), "Invalid Frame Type: %u", ft);
         break;
     }
     AddTabularText(result_str);
