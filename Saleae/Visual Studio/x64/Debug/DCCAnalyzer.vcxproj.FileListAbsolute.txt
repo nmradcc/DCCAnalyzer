@@ -1,0 +1,2 @@
+C:\Users\ecwhi\OneDrive\Documents\Model Railroading\NMRA\DCC-WG\DCSTesting\Saleae\new\SampleAnalyzer\Visual Studio\x64\Debug\DCCAnalyzer.dll
+C:\Users\ecwhi\OneDrive\Documents\Model Railroading\NMRA\DCC-WG\DCSTesting\Saleae\new\SampleAnalyzer\Visual Studio\x64\Debug\DCCAnalyzer.pdb
