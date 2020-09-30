@@ -2,7 +2,16 @@
 
 This repository is for maintaining the software associated with decoding DCC packets using a logic analyzer.
 
-The nmradcc/DCCAnalyzer/src directory contains the source code for the parsing functions necessary to support the following two analyzers.
+The nmradcc/DCCAnalyzer/src directory contains the source code for the parsing functions necessary.
+
+This analyzer requires the [Saleae Logic 2 software](https://ideas.saleae.com/f/changelog/). It's not compatible with the Logic 1.x software, but it could be with only small modifications.
+
+## Installation
+
+Once you have either build the analyzer library, or downloaded the compiled libraries, follow these instructions to install the DCC Analyzer in the Logic 2 software:
+https://support.saleae.com/faq/technical-faq/setting-up-developer-directory
+
+_Note: MacOS Users have an extra step, which is explained in the article above_
 
 ## Getting Started
 
@@ -40,6 +49,8 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
+cd Analyzers
+install_name_tool -change @executable_path/libAnalyzer.dylib @rpath/libAnalyzer.dylib libdcc_analyzer.so
 ```
 
 ### Ubuntu 16.04
