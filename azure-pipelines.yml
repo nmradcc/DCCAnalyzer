@@ -99,9 +99,9 @@ jobs:
         unzip -l ${REPO_NAME}-bin.zip
     # This creates (or replaces) a github release for tagged commits only. The release name will be the tag name.
     # Note, if you do not want to setup a github service connection, but want to use CI, you will need to delete this task.
-    - task: GithubRelease@0 
-      displayName: 'Create GitHub Release'      
-      inputs:
-        gitHubConnection: $(GITHUB_CONNECTION)
-        repositoryName: $(Build.Repository.Name)           
-        assets: $(Build.ArtifactStagingDirectory)/*.zip
+#    - task: GithubRelease@0 
+#      displayName: 'Create GitHub Release'      
+#      inputs:
+#        gitHubConnection: $(GITHUB_CONNECTION)
+#        repositoryName: $(Build.Repository.Name)           
+#        assets: $(Build.ArtifactStagingDirectory)/*.zip
