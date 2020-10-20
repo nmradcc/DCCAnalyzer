@@ -59,6 +59,8 @@ protected: //vars
 	UINT mMin0hbit;
 	UINT mMax0hbit;
 	UINT mMaxBitLen;
+    UINT mCutoutMin;
+    UINT mCutoutMax;
 #pragma warning( pop )
 };
 

@@ -242,10 +242,17 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		snprintf(result_str, sizeof(result_str), "Preamble bits: %llu ", frame.mData1);
 		AddResultString(result_str,framing_error?"f":"",checksum_error?"x":"");
 		break;
-//	case FRAME_SBIT:
-//		AddResultString("S");
-//		AddResultString("S ", framing_error ? "f" : "", checksum_error ? "x" : "");
-//		break;
+    case FRAME_CUTOUT:
+        AddResultString("R");
+        AddResultString("Railcom Cutout ");
+        snprintf(result_str, sizeof(result_str), "Railcom Cutout ");
+        AddResultString(result_str,framing_error?"f":"",checksum_error?"x":"");
+        break;
+	case FRAME_SBIT:
+        AddResultString("S");
+		AddResultString("SBIT", framing_error ? "f" : "", checksum_error ? "x" : "");
+        snprintf(result_str, sizeof(result_str), "SBIT ");
+		break;
 	case FRAME_ADDR:
 		AddResultString("A");
 		AddResultString("Addr");
@@ -298,6 +305,11 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		snprintf(result_str, sizeof(result_str), "Checksum: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
+    case FRAME_PEBIT:
+        AddResultString("E");
+        AddResultString("PEBIT", framing_error ? "f" : "", checksum_error ? "x" : "");
+        snprintf(result_str, sizeof(result_str), "PEBIT ");
+        break;
 	default:
         break;
 	}
@@ -371,9 +383,12 @@ void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase d
     case FRAME_PREAMBLE:
         snprintf(result_str, sizeof(result_str), "Preamble bits: %llu", frame.mData1);
         break;
-//    case FRAME_SBIT:
-//        snprintf(result_str, sizeof(result_str), "S");
-//        break;
+    case FRAME_CUTOUT:
+        snprintf(result_str, sizeof(result_str), "Railcom Cutout");
+        break;
+    case FRAME_SBIT:
+        snprintf(result_str, sizeof(result_str), "SBIT");
+        break;
     case FRAME_ADDR:
         switch (frame.mData1)
         {
@@ -404,6 +419,9 @@ void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase d
         break;
     case FRAME_CHECKSUM:
         snprintf(result_str, sizeof(result_str), "Checksum: %#02llx", frame.mData1);
+        break;
+    case FRAME_PEBIT:
+        snprintf(result_str, sizeof(result_str), "PEBIT");
         break;
     default:
 		snprintf(result_str, sizeof(result_str), "Invalid Frame Type: %u", ft);
