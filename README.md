@@ -1,4 +1,4 @@
-# DCCAnalyzer
+# DCCAnalyzer v0.0.2
 
 This repository is for maintaining the software associated with decoding DCC packets using a logic analyzer.
 
