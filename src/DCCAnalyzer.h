@@ -10,8 +10,24 @@
 
 class DCCAnalyzerSettings;
 
-enum eFrameState { FSTATE_INIT, FSTATE_PREAMBLE, FSTATE_SBADDR, FSTATE_ADDR, FSTATE_SBEADR, FSTATE_EADR, FSTATE_SBCMD, FSTATE_CMD, FSTATE_SBDAT,
-	FSTATE_DATA, FSTATE_SBACC, FSTATE_ACC, FSTATE_SVC, FSTATE_SBCHK, FSTATE_CHK, FSTATE_STOP };
+enum eFrameState {
+    FSTATE_INIT,
+    FSTATE_PREAMBLE,
+    FSTATE_SBADDR,
+    FSTATE_ADDR,
+    FSTATE_SBEADR,
+    FSTATE_EADR,
+    FSTATE_SBCMD,
+    FSTATE_CMD,
+    FSTATE_SBDAT,
+	FSTATE_DATA,
+    FSTATE_SBACC,
+    FSTATE_ACC,
+    FSTATE_SVC,
+    FSTATE_SBCHK,
+    FSTATE_CHK,
+    FSTATE_STOP
+};
 
 class ANALYZER_EXPORT DCCAnalyzer : public Analyzer2
 {
@@ -61,6 +77,12 @@ protected: //vars
 	UINT mMaxBitLen;
     UINT mCutoutMin;
     UINT mCutoutMax;
+    UINT mCutoutTcsMin;
+    UINT mCutoutTcsMax;
+    UINT mCutoutTceMin;
+    UINT mCutoutTceMax;
+    UINT mCutoutEndMin;
+    UINT mCutoutEndMax;
 #pragma warning( pop )
 };
 

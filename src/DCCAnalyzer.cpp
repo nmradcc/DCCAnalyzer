@@ -32,7 +32,11 @@ UINT	DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
 	*nSample = mDCC->GetSampleOfNextEdge();
     if (nHBitLen >= mCutoutMin && nHBitLen <= mCutoutMax)
         return RAILCOM_CUTOUT_FLAG;
-	else if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
+    else if (nHBitLen >= mCutoutTcsMin && nHBitLen <= mCutoutTcsMax)
+        return RAILCOM_CUTOUT_TCS_FLAG;
+    else if (nHBitLen >= mCutoutEndMin && nHBitLen <= mCutoutEndMax)
+        return RAILCOM_CUTOUT_END_FLAG;
+    else if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
 	else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
 		return 0;
@@ -48,6 +52,10 @@ UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
 	UINT	nHBitLen = (UINT)(mDCC->GetSampleNumber() - nSampNumber);
     if (nHBitLen >= mCutoutMin && nHBitLen <= mCutoutMax)
         return RAILCOM_CUTOUT_FLAG;
+    else if (nHBitLen >= mCutoutTcsMin && nHBitLen <= mCutoutTcsMax)
+        return RAILCOM_CUTOUT_TCS_FLAG;
+    else if (nHBitLen >= mCutoutEndMin && nHBitLen <= mCutoutEndMax)
+        return RAILCOM_CUTOUT_END_FLAG;
 	else if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
 	else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
@@ -67,6 +75,10 @@ UINT	DCCAnalyzer::GetNextBit(U64 *nSample)
 	UINT nHBit2 = GetNextHBit(nSample);
     if ((nHBit1 == RAILCOM_CUTOUT_FLAG) || (nHBit2 == RAILCOM_CUTOUT_FLAG))
         return RAILCOM_CUTOUT_FLAG;
+    else if ((nHBit1 == RAILCOM_CUTOUT_TCS_FLAG) || (nHBit2 == RAILCOM_CUTOUT_TCS_FLAG))
+        return RAILCOM_CUTOUT_TCS_FLAG;
+    else if ((nHBit1 == RAILCOM_CUTOUT_END_FLAG) || (nHBit2 == RAILCOM_CUTOUT_END_FLAG))
+        return RAILCOM_CUTOUT_END_FLAG;
     else if ((nHBit1 > 1) || (nHBit2 > 1) || ((UINT)(*nSample - nTemp) > mMaxBitLen))
 		return BIT_ERROR_FLAG;
 	else if (nHBit1 != nHBit2)
@@ -152,6 +164,14 @@ void DCCAnalyzer::Setup()
 	double dMaxCorrection = 1.0 + mSettings->mCalPPM / 1000000.0;
 	double dMinCorrection = 1.0 - mSettings->mCalPPM / 1000000.0;
 	mMaxBitLen = round(12000.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
+    mCutoutMin = round((454.0 + 55.0 - 26.0) * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutMax = round((488.0 + 61.0 - 32.0) * (mSampleRateHz / 1000000) * dMaxCorrection);
+    mCutoutTcsMin  = round(26.0    * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutTcsMax  = round(32.0    * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutTceMin  = round(454.0   * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutTceMax  = round(488.0   * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutEndMin  = round(0.1     * (mSampleRateHz / 1000000) * dMinCorrection);
+    mCutoutEndMax  = round(29.0    * (mSampleRateHz / 1000000) * dMinCorrection);
 	switch (mSettings->mMode)
 	{
 	case DCCAnalyzerEnums::MODE_CS:
@@ -159,8 +179,6 @@ void DCCAnalyzer::Setup()
 		mMax1hbit  = round(61.0    * (mSampleRateHz / 1000000) * dMaxCorrection);
 		mMin0hbit  = round(95.0    * (mSampleRateHz / 1000000) * dMinCorrection);
 		mMax0hbit  = round(9900.0  * (mSampleRateHz / 1000000) * dMaxCorrection);
-        mCutoutMin = round((454.0 + 55.0 - 26.0) * (mSampleRateHz / 1000000) * dMinCorrection);
-        mCutoutMax = round((488.0 + 61.0 - 32.0) * (mSampleRateHz / 1000000) * dMaxCorrection);
 		break;
 	case DCCAnalyzerEnums::MODE_DECODER:
 	case DCCAnalyzerEnums::MODE_SERVICE:
@@ -169,8 +187,6 @@ void DCCAnalyzer::Setup()
 		mMax1hbit  = round(64.0    * (mSampleRateHz / 1000000) * dMaxCorrection);
 		mMin0hbit  = round(90.0    * (mSampleRateHz / 1000000) * dMinCorrection);
 		mMax0hbit  = round(10000.0 * (mSampleRateHz / 1000000) * dMaxCorrection);
-        mCutoutMin = round((454.0 + 52.0 - 26.0) * (mSampleRateHz / 1000000) * dMinCorrection);
-        mCutoutMax = round((488.0 + 64.0 - 32.0) * (mSampleRateHz / 1000000) * dMaxCorrection);
 		break;
 	}
 
@@ -191,6 +207,7 @@ void DCCAnalyzer::WorkerThread()
 	U64 nCurSample = nFrameStart;
     U64 nPreambleStart = 0;     // capture the actual start of the preamble
 	U64 nBitStartSample = 0;
+    U64 nCutoutStart = 0;
 	U64 nTemp = nCurSample;
 	for (;;) {
 		nBitStartSample = nCurSample;
@@ -211,23 +228,30 @@ void DCCAnalyzer::WorkerThread()
                     ef = FSTATE_PREAMBLE;
                 }
 				break;
+            case RAILCOM_CUTOUT_TCS_FLAG:
+                nCutoutStart = nBitStartSample+1;
+                break;
+            case RAILCOM_CUTOUT_TCE_FLAG:
+                break;
+            case RAILCOM_CUTOUT_END_FLAG:
+                mResults->AddMarker(nCutoutStart, AnalyzerResults::Dot, mSettings->mInputChannel);
+                mResults->AddMarker(nCurSample, AnalyzerResults::Dot, mSettings->mInputChannel);
+                PostFrame(nCutoutStart, nCurSample, FRAME_CUTOUT, 0, 0);
+                ReportProgress(nCurSample);
+                nFrameStart = nCurSample;
+                nPreambleStart = nFrameStart+1;
+                nHBitCnt = 0;
+                ef = FSTATE_INIT;
+                break;
             case RAILCOM_CUTOUT_FLAG:
-                mResults->AddMarker(nBitStartSample, AnalyzerResults::Dot, mSettings->mInputChannel);
-                nHBitVal = GetNextHBit(&nCurSample);
-                if (nHBitVal == 1) {
-                    nFrameStart = nCurSample + 1;
-                    nPreambleStart = nFrameStart;
-                    PostFrame(nBitStartSample, nCurSample, FRAME_CUTOUT, 0, 0);
-                    ReportProgress(nCurSample);
-                    mResults->AddMarker(nFrameStart, AnalyzerResults::Dot, mSettings->mInputChannel);
-                } else {
-                    nHBitCnt = 0;
-                    nFrameStart = nCurSample + 1;
-                    PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-                    mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-                    mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-                    ReportProgress(nCurSample);
-                }
+                nCutoutStart = nBitStartSample+1;
+                mResults->AddMarker(nCutoutStart, AnalyzerResults::Dot, mSettings->mInputChannel);
+                mResults->AddMarker(nCurSample, AnalyzerResults::Dot, mSettings->mInputChannel);
+                PostFrame(nCutoutStart, nCurSample, FRAME_CUTOUT, 0, 0);
+                ReportProgress(nCurSample);
+                nFrameStart = nCurSample;
+                nPreambleStart = nFrameStart+1;
+                nHBitCnt = 0;
                 ef = FSTATE_INIT;
                 break;
 			default: // error frame
@@ -532,6 +556,7 @@ void DCCAnalyzer::WorkerThread()
                 nHBitCnt = 2;       // marks the case where the next bit might be preamble and we need to count it.
                 break;
             case 0:
+            case RAILCOM_CUTOUT_TCS_FLAG:
             case RAILCOM_CUTOUT_FLAG:
                 nHBitCnt = 0;       // no preamble next so don't count these bits as preamble
                 break;
