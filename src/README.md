@@ -34,3 +34,6 @@ Max. bit = 12000uSec * (1.0 + correction[ppm]/1,000,000.0)
 
 Sample counts are rounded to the closest integer using the standard C++ 11 round() function.
 
+Starting with 1.0.0, RailCom Cutout Detection is supported. This feature just shows where the cutout happens--it cannot
+decode any RailCom packets becuase there is no RailCom Detector. This was testing useing the Lenz LZV200 DCS.
+
