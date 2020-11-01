@@ -55,8 +55,8 @@ protected: //functions
 	void Setup();
 
 protected: //vars
-    std::auto_ptr< DCCAnalyzerSettings > mSettings;
-    std::auto_ptr< DCCAnalyzerResults > mResults;
+    std::unique_ptr< DCCAnalyzerSettings > mSettings;
+    std::unique_ptr< DCCAnalyzerResults > mResults;
     AnalyzerChannelData *mDCC;
 
     DCCSimulationDataGenerator mSimulationDataGenerator;

@@ -28,10 +28,10 @@ public:
 	int		mCalPPM;
 
 protected:
-    std::auto_ptr< AnalyzerSettingInterfaceChannel >    mInputChannelInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceInteger >    mPreambleBitsInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceNumberList >    mModeInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceInteger >    mCalPPMInterface;
+    std::unique_ptr< AnalyzerSettingInterfaceChannel >    mInputChannelInterface;
+	std::unique_ptr< AnalyzerSettingInterfaceInteger >    mPreambleBitsInterface;
+	std::unique_ptr< AnalyzerSettingInterfaceNumberList >    mModeInterface;
+	std::unique_ptr< AnalyzerSettingInterfaceInteger >    mCalPPMInterface;
 
 };
 
