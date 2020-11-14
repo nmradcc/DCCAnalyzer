@@ -244,8 +244,8 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 		break;
     case FRAME_CUTOUT:
         AddResultString("R");
-        AddResultString("Railcom Cutout ");
-        snprintf(result_str, sizeof(result_str), "Railcom Cutout ");
+        AddResultString("Railcom");
+        snprintf(result_str, sizeof(result_str), "Railcom");
         AddResultString(result_str,framing_error?"f":"",checksum_error?"x":"");
         break;
 	case FRAME_SBIT:
@@ -256,41 +256,31 @@ void DCCAnalyzerResults::GenerateBubbleText(U64 frame_index, Channel & /*channel
 	case FRAME_ADDR:
 		AddResultString("A");
 		AddResultString("Addr");
-		switch (frame.mData1)
-		{
-		case 0:
-			sprintf(result_str, "Address: Broadcast "); 
-			break;
-		case 0xFF:
-			sprintf(result_str, "Address: Idle ");
-			break;
-		default:
-			sprintf(result_str, "Address: %#02llx ", frame.mData1);
-		}
+        sprintf(result_str, "Address: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_EADDR:
-		AddResultString("L");
-		AddResultString("LAddr");
-		snprintf(result_str, sizeof(result_str), "LAddress: %#02llx ", frame.mData1);
+		AddResultString("D");
+		AddResultString("Data");
+		snprintf(result_str, sizeof(result_str), "Data: %#02llx ", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_CMD:
-		AddResultString("C");
-		AddResultString("Cmd");
-		snprintf(result_str, sizeof(result_str), "Command: %#02llx %s", frame.mData1, ParseCommand(frame.mData1));
+		AddResultString("D");
+		AddResultString("Data");
+		snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_ACC:
-		AddResultString("K");
-		AddResultString("Acc");
-		snprintf(result_str, sizeof(result_str), "Accessory: %#02llx %s", frame.mData1, ParseAccessory(frame.mData1));
+		AddResultString("D");
+		AddResultString("Data");
+		snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_SVC:
-		AddResultString("T");
-		AddResultString("Svc");
-		snprintf(result_str, sizeof(result_str), "Service: %s", ParseServiceMode(frame.mData1));
+		AddResultString("D");
+		AddResultString("Data");
+		snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
 		AddResultString(result_str, framing_error ? "f" : "", checksum_error ? "x" : "");
 		break;
 	case FRAME_DATA:
@@ -384,35 +374,25 @@ void DCCAnalyzerResults::GenerateFrameTabularText(U64 frame_index, DisplayBase d
         snprintf(result_str, sizeof(result_str), "Preamble bits: %llu", frame.mData1);
         break;
     case FRAME_CUTOUT:
-        snprintf(result_str, sizeof(result_str), "Railcom Cutout");
+        snprintf(result_str, sizeof(result_str), "Railcom");
         break;
     case FRAME_SBIT:
         snprintf(result_str, sizeof(result_str), "SBIT");
         break;
     case FRAME_ADDR:
-        switch (frame.mData1)
-        {
-        case 0:
-            snprintf(result_str, sizeof(result_str), "Address: Broadcast"); 
-            break;
-        case 0xFF:
-            snprintf(result_str, sizeof(result_str), "Address: Idle");
-            break;
-        default:
-            snprintf(result_str, sizeof(result_str), "Address: %#02llx", frame.mData1);
-        }
+        snprintf(result_str, sizeof(result_str), "Address: %#02llx", frame.mData1);
         break;
     case FRAME_EADDR:
-        snprintf(result_str, sizeof(result_str), "LAddress: %#02llx", frame.mData1);
+        snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
         break;
     case FRAME_CMD:
-        snprintf(result_str, sizeof(result_str), "Command: %#02llx %s", frame.mData1, ParseCommand(frame.mData1));
+        snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
         break;
     case FRAME_ACC:
-        snprintf(result_str, sizeof(result_str), "Accessory: %#02llx %s", frame.mData1, ParseAccessory(frame.mData1));
+        snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
         break;
     case FRAME_SVC:
-        snprintf(result_str, sizeof(result_str), "Service: %s", ParseServiceMode(frame.mData1));
+        snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);
         break;
     case FRAME_DATA:
         snprintf(result_str, sizeof(result_str), "Data: %#02llx", frame.mData1);

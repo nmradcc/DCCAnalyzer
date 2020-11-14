@@ -1,0 +1,13 @@
+{
+  "name": "DCCUtilities",
+  "apiVersion": "1.0.0",
+  "author": "Erich Whitney",
+  "version": "0.0.1",
+  "description": "Utilities for Decoding DCC Packets",
+  "extensions": {
+    "DCCUtilities": {
+      "type": "HighLevelAnalyzer",
+      "entryPoint": "HighLevelAnalyzer.Hla"
+    }
+  }
+}

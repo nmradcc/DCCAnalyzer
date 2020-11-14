@@ -102,61 +102,122 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 
 // This is a new feature for the Saleae Analyzer that enables the Python debugging interface
 
-#ifdef SALEAE_FRAME_V2
+//#ifdef SALEAE_FRAME_V2
 
     FrameV2 framev2;
 
-                            // Flags,       ERROR_FLAG
     switch (ft)
     {
     case FRAME_PREAMBLE:    // 0,           nHBitVal/2
-        framev2.AddString("type", "preamble");
+        framev2.AddString("type", "preamble");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "preamble", nStartSample, nEndSample );
         break;
     case FRAME_CUTOUT:
-        framev2.AddString("type", "cutout");
+        framev2.AddString("type", "cutout");                        
+        mResults->AddFrameV2( framev2, "cutout", nStartSample, nEndSample );
         break;
     case FRAME_SBIT:        // 0
-        framev2.AddString("type", "sbit");
+        framev2.AddString("type", "sbit");                        
+        mResults->AddFrameV2( framev2, "sbit", nStartSample, nEndSample );
         break;
     case FRAME_ADDR:        // 0,           nVal
-        framev2.AddString("type", "addr");
+        framev2.AddString("type", "addr");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "addr", nStartSample, nEndSample );
         break;
     case FRAME_EADDR:       // 0,           nVal
-        framev2.AddString("type", "eaddr");
+        framev2.AddString("type", "data");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
         break;
     case FRAME_CMD:         // 0,           nVal
-        framev2.AddString("type", "cmd");
+        framev2.AddString("type", "data");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
         break;
     case FRAME_ACC:         // 0,           nVal
-        framev2.AddString("type", "acc");
+        framev2.AddString("type", "data");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
         break;
     case FRAME_SVC:         // 0,           nVal
-        framev2.AddString("type", "svc");
+        framev2.AddString("type", "data");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
         break;
     case FRAME_DATA:        // 0,           nVal
-        framev2.AddString("type", "data");
+        framev2.AddString("type", "data");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
         break;
     case FRAME_CHECKSUM:    // nCurSample,  nVal
-        framev2.AddString("type", "checksum");
+        framev2.AddString("type", "checksum");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "checksum", nStartSample, nEndSample );
         break;
     case FRAME_PEBIT:         // End of packet bit
-        framev2.AddString("type", "pebit");
+        framev2.AddString("type", "pebit");                        
+        mResults->AddFrameV2( framev2, "pebit", nStartSample, nEndSample );
         break;
     default:
         break;
     }
 
+/*
+                                                                      
+                            // Flags,       ERROR_FLAG                
+    switch (ft)                                                       
+    {                                                                 
+    case FRAME_PREAMBLE:    // 0,           nHBitVal/2                
+        framev2.AddString("type", "preamble");                        
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_CUTOUT:                                                
+        framev2.AddString("type", "cutout");                          
+        break;                                                        
+    case FRAME_SBIT:        // 0                                      
+        framev2.AddString("type", "sbit");                            
+        break;                                                        
+    case FRAME_ADDR:        // 0,           nVal                      
+        framev2.AddString("type", "addr");                            
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_EADDR:       // 0,           nVal                      
+        framev2.AddString("type", "eaddr");                           
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_CMD:         // 0,           nVal                      
+        framev2.AddString("type", "cmd");                             
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_ACC:         // 0,           nVal                      
+        framev2.AddString("type", "acc");                             
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_SVC:         // 0,           nVal                      
+        framev2.AddString("type", "svc");                             
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_DATA:        // 0,           nVal                      
+        framev2.AddString("type", "data");                            
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_CHECKSUM:    // nCurSample,  nVal                      
+        framev2.AddString("type", "checksum");                        
+        framev2.AddByte("data", (U8)Data1);                           
+        break;                                                        
+    case FRAME_PEBIT:         // End of packet bit                    
+        framev2.AddString("type", "pebit");                           
+        break;                                                        
+    default:                                                          
+        break;                                                        
+    }                                                                 
+                                                                      
     mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
+*/
 
-#endif
+//#endif
 
     mResults->CommitResults();
 
