@@ -13,20 +13,12 @@ class DCCAnalyzerSettings;
 enum eFrameState {
     FSTATE_INIT,
     FSTATE_PREAMBLE,
-    FSTATE_SBADDR,
-    FSTATE_ADDR,
-    FSTATE_SBEADR,
-    FSTATE_EADR,
-    FSTATE_SBCMD,
-    FSTATE_CMD,
-    FSTATE_SBDAT,
-	FSTATE_DATA,
-    FSTATE_SBACC,
-    FSTATE_ACC,
-    FSTATE_SVC,
-    FSTATE_SBCHK,
-    FSTATE_CHK,
-    FSTATE_STOP
+    FSTATE_PSBIT,
+    FSTATE_ADBYTE,
+    FSTATE_DSBIT,
+	FSTATE_DBYTE,
+    FSTATE_EDBYTE,
+    FSTATE_PEBIT
 };
 
 class ANALYZER_EXPORT DCCAnalyzer : public Analyzer2
@@ -51,6 +43,7 @@ protected: //functions
 	UINT LookaheadNextHBit(U64 *nSample);
 	UINT GetNextHBit(U64 *nSample);
 	UINT GetNextBit(U64 *nSample);
+    bool CheckPacketEndHold(U64 *nSample);
 	void PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 Flags, U64 Data1, U64 Data2);
 	void Setup();
 
@@ -65,24 +58,14 @@ protected: //vars
     //Serial analysis vars:
     U32 mSampleRateHz;
     std::vector<U32> mSampleOffsets;
-    U32 mParityBitOffset;
-    U32 mStartOfStopBitOffset;
-    U32 mEndOfStopBitOffset;
     BitState mBitLow;
     BitState mBitHigh;
-	UINT mMin1hbit;
-	UINT mMax1hbit;
-	UINT mMin0hbit;
-	UINT mMax0hbit;
-	UINT mMaxBitLen;
-    UINT mCutoutMin;
-    UINT mCutoutMax;
-    UINT mCutoutTcsMin;
-    UINT mCutoutTcsMax;
-    UINT mCutoutTceMin;
-    UINT mCutoutTceMax;
-    UINT mCutoutEndMin;
-    UINT mCutoutEndMax;
+	UINT mMin1hbit;         // Minimum 1 half bit length (microseconds)
+	UINT mMax1hbit;         // Maximum 1 half bit length (microseconds)
+	UINT mMin0hbit;         // Minimum 0 half bit length (microseconds)
+	UINT mMax0hbit;         // Maximum 0 half bit length (microseconds)
+	UINT mMaxBitLen;        // overall maximum DCC bit length
+    UINT mMinPEHold;        // minimum time the DCC bitstream has to stay active past the Packet End Bit
 #pragma warning( pop )
 };
 
