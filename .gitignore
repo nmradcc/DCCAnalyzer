@@ -6,4 +6,7 @@ DCCAnalyzer.vpj
 DCCAnalyzer.vpw
 DCCAnalyzer.vpwhistu
 DCCAnalyzer.vtg
+/build.save
+/cmake
+*.graffle
 
