@@ -29,37 +29,38 @@ void DCCAnalyzer::SetupResults()
     mResults->AddChannelBubblesWillAppearOn(mSettings->mInputChannel);
 }
 
-UINT	DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
+UINT DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
 {
 	UINT nHBitLen = (UINT)(mDCC->GetSampleOfNextEdge() - *nSample);
 	*nSample = mDCC->GetSampleOfNextEdge();
-    if (nHBitLen >= mCutoutMin && nHBitLen <= mCutoutMax)
-        return RAILCOM_CUTOUT_FLAG;
-    else if (nHBitLen >= mCutoutTcsMin && nHBitLen <= mCutoutTcsMax)
-        return RAILCOM_CUTOUT_TCS_FLAG;
-    else if (nHBitLen >= mCutoutEndMin && nHBitLen <= mCutoutEndMax)
-        return RAILCOM_CUTOUT_END_FLAG;
-    else if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
+    if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
 	else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
 		return 0;
-	else
+    else if (nHBitLen >=mMinPEHold && nHBitLen <= mMaxPGap) {
+        return 3;
+    } else
 		return BIT_ERROR_FLAG; // bit error
 }
 
-UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
+bool DCCAnalyzer::CheckPacketEndHold(U64 *nSample)
+{
+	UINT nHBitLen = (UINT)(mDCC->GetSampleOfNextEdge() - *nSample);
+//	*nSample = mDCC->GetSampleOfNextEdge();
+//    if (nHBitLen >= mMinPEHold && nHBitLen < mMaxPGap)
+    if (nHBitLen >= mMinPEHold)
+		return true;
+	else
+        return false;
+}
+
+UINT DCCAnalyzer::GetNextHBit(U64 *nSample)
 {
 	U64 nSampNumber = *nSample;
 	mDCC->AdvanceToNextEdge();
 	*nSample = mDCC->GetSampleNumber();
 	UINT	nHBitLen = (UINT)(mDCC->GetSampleNumber() - nSampNumber);
-    if (nHBitLen >= mCutoutMin && nHBitLen <= mCutoutMax)
-        return RAILCOM_CUTOUT_FLAG;
-    else if (nHBitLen >= mCutoutTcsMin && nHBitLen <= mCutoutTcsMax)
-        return RAILCOM_CUTOUT_TCS_FLAG;
-    else if (nHBitLen >= mCutoutEndMin && nHBitLen <= mCutoutEndMax)
-        return RAILCOM_CUTOUT_END_FLAG;
-	else if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
+    if (nHBitLen >= mMin1hbit && nHBitLen <= mMax1hbit)
 		return 1;
     else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
 		return 0;
@@ -71,18 +72,12 @@ UINT	DCCAnalyzer::GetNextHBit(U64 *nSample)
 // Get the next bit (0 or 1).
 // Alignment error: return 3;
 // Framing and other error return 2;
-UINT	DCCAnalyzer::GetNextBit(U64 *nSample)
+UINT DCCAnalyzer::GetNextBit(U64 *nSample)
 {
 	U64 nTemp = *nSample;
 	UINT nHBit1 = GetNextHBit(nSample);
 	UINT nHBit2 = GetNextHBit(nSample);
-    if ((nHBit1 == RAILCOM_CUTOUT_FLAG) || (nHBit2 == RAILCOM_CUTOUT_FLAG))
-        return RAILCOM_CUTOUT_FLAG;
-    else if ((nHBit1 == RAILCOM_CUTOUT_TCS_FLAG) || (nHBit2 == RAILCOM_CUTOUT_TCS_FLAG))
-        return RAILCOM_CUTOUT_TCS_FLAG;
-    else if ((nHBit1 == RAILCOM_CUTOUT_END_FLAG) || (nHBit2 == RAILCOM_CUTOUT_END_FLAG))
-        return RAILCOM_CUTOUT_END_FLAG;
-    else if ((nHBit1 > 1) || (nHBit2 > 1) || ((UINT)(*nSample - nTemp) > mMaxBitLen))
+    if ((nHBit1 > 1) || (nHBit2 > 1) || ((UINT)(*nSample - nTemp) > mMaxBitLen))
 		return BIT_ERROR_FLAG;      // bit error
 	else if (nHBit1 != nHBit2)
 		return FRAMING_ERROR_FLAG;  // frame error
@@ -102,61 +97,51 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 
 // This is a new feature for the Saleae Analyzer that enables the Python debugging interface
 
-#ifdef SALEAE_FRAME_V2
-
     FrameV2 framev2;
 
-                            // Flags,       ERROR_FLAG
     switch (ft)
     {
     case FRAME_PREAMBLE:    // 0,           nHBitVal/2
-        framev2.AddString("type", "preamble");
+        framev2.AddString("type", "preamble");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "preamble", nStartSample, nEndSample );
         break;
-    case FRAME_CUTOUT:
-        framev2.AddString("type", "cutout");
+    case FRAME_PSBIT:        // 0
+        framev2.AddString("type", "psbit");                        
+        mResults->AddFrameV2( framev2, "psbit", nStartSample, nEndSample );
         break;
-    case FRAME_SBIT:        // 0
-        framev2.AddString("type", "sbit");
-        break;
-    case FRAME_ADDR:        // 0,           nVal
-        framev2.AddString("type", "addr");
+    case FRAME_ADBYTE:        // 0,           nVal
+        framev2.AddString("type", "adbyte");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "adbyte", nStartSample, nEndSample );
         break;
-    case FRAME_EADDR:       // 0,           nVal
-        framev2.AddString("type", "eaddr");
-        framev2.AddByte("data", (U8)Data1);
+    case FRAME_DSBIT:        // 0
+        framev2.AddString("type", "dsbit");                        
+        mResults->AddFrameV2( framev2, "dsbit", nStartSample, nEndSample );
         break;
-    case FRAME_CMD:         // 0,           nVal
-        framev2.AddString("type", "cmd");
+    case FRAME_DBYTE:        // 0,           nVal
+        framev2.AddString("type", "dbyte");                        
         framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "dbyte", nStartSample, nEndSample );
         break;
-    case FRAME_ACC:         // 0,           nVal
-        framev2.AddString("type", "acc");
+    case FRAME_EDBYTE:    // nCurSample,  nVal
+        framev2.AddString("type", "edbyte");                        
         framev2.AddByte("data", (U8)Data1);
-        break;
-    case FRAME_SVC:         // 0,           nVal
-        framev2.AddString("type", "svc");
-        framev2.AddByte("data", (U8)Data1);
-        break;
-    case FRAME_DATA:        // 0,           nVal
-        framev2.AddString("type", "data");
-        framev2.AddByte("data", (U8)Data1);
-        break;
-    case FRAME_CHECKSUM:    // nCurSample,  nVal
-        framev2.AddString("type", "checksum");
-        framev2.AddByte("data", (U8)Data1);
+        mResults->AddFrameV2( framev2, "edbyte", nStartSample, nEndSample );
         break;
     case FRAME_PEBIT:         // End of packet bit
-        framev2.AddString("type", "pebit");
+        framev2.AddString("type", "pebit");                        
+        mResults->AddFrameV2( framev2, "pebit", nStartSample, nEndSample );
+        break;
+    case FRAME_END_ERR:
+        framev2.AddString("type", "error");                        
+        mResults->AddFrameV2( framev2, "packet end error", nStartSample, nEndSample );
         break;
     default:
+        framev2.AddString("type", "error");                        
+        mResults->AddFrameV2( framev2, "error", nStartSample, nEndSample );
         break;
     }
-
-    mResults->AddFrameV2( framev2, "data", nStartSample, nEndSample );
-
-#endif
 
     mResults->CommitResults();
 
@@ -164,36 +149,36 @@ void DCCAnalyzer::PostFrame(U64 nStartSample, U64 nEndSample, eFrameType ft, U8 
 
 void DCCAnalyzer::Setup()
 {
-    char result_str[128];
-
+    //
+    // Sample Rate
+    //
     mSampleRateHz = GetSampleRate();
     double dSamplesPerMicrosecond = (mSampleRateHz / 1000000.0);
-
+    //
+    // Use the mCalPPM setting to adjust the resolution of the measurements
+    //
 	double dMaxCorrection = 1.0 + mSettings->mCalPPM / 1000000.0;
 	double dMinCorrection = 1.0 - mSettings->mCalPPM / 1000000.0;
+    //
+    // The following measurements are in microseconds
+    //
 	mMaxBitLen = round(12000.0 * dSamplesPerMicrosecond * dMaxCorrection);
-    mCutoutMin = round((454.0 + 55.0 - 26.0) * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutMax = round((488.0 + 61.0 - 32.0) * dSamplesPerMicrosecond * dMaxCorrection);
-    mCutoutTcsMin  = round(26.0    * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutTcsMax  = round(32.0    * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutTceMin  = round(454.0   * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutTceMax  = round(488.0   * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutEndMin  = round(0.1     * dSamplesPerMicrosecond * dMinCorrection);
-    mCutoutEndMax  = round(29.0    * dSamplesPerMicrosecond * dMinCorrection);
+    mMinPEHold = round(   26.0 * dSamplesPerMicrosecond * dMinCorrection);
+    mMaxPGap   = round(30000.0 * dSamplesPerMicrosecond * dMaxCorrection);
 	switch (mSettings->mMode)
 	{
 	case DCCAnalyzerEnums::MODE_CS:
-		mMin1hbit  = round(55.0    * dSamplesPerMicrosecond * dMinCorrection);
-		mMax1hbit  = round(61.0    * dSamplesPerMicrosecond * dMaxCorrection);
-		mMin0hbit  = round(95.0    * dSamplesPerMicrosecond * dMinCorrection);
+		mMin1hbit  = round(  55.0  * dSamplesPerMicrosecond * dMinCorrection);
+		mMax1hbit  = round(  61.0  * dSamplesPerMicrosecond * dMaxCorrection);
+		mMin0hbit  = round(  95.0  * dSamplesPerMicrosecond * dMinCorrection);
 		mMax0hbit  = round(9900.0  * dSamplesPerMicrosecond * dMaxCorrection);
 		break;
 	case DCCAnalyzerEnums::MODE_DECODER:
 	case DCCAnalyzerEnums::MODE_SERVICE:
 	default:
-		mMin1hbit  = round(52.0    * dSamplesPerMicrosecond * dMinCorrection);
-		mMax1hbit  = round(64.0    * dSamplesPerMicrosecond * dMaxCorrection);
-		mMin0hbit  = round(90.0    * dSamplesPerMicrosecond * dMinCorrection);
+		mMin1hbit  = round(   52.0 * dSamplesPerMicrosecond * dMinCorrection);
+		mMax1hbit  = round(   64.0 * dSamplesPerMicrosecond * dMaxCorrection);
+		mMin0hbit  = round(   90.0 * dSamplesPerMicrosecond * dMinCorrection);
 		mMax0hbit  = round(10000.0 * dSamplesPerMicrosecond * dMaxCorrection);
 		break;
 	}
@@ -224,52 +209,32 @@ void DCCAnalyzer::WorkerThread()
 			nHBitVal = GetNextHBit(&nCurSample); // get next hbit
 			switch (nHBitVal)
 			{
-            case 0: // 0 HBit causes a reset in preamble bit count
-                nHBitCnt = 0;
-                nFrameStart = nCurSample + 1;
-                nPreambleStart = nFrameStart;
-				break;
             case 1:
                 ++nHBitCnt;
                 if (nHBitCnt == (mSettings->mPreambleBits * 2)) {
                     ef = FSTATE_PREAMBLE;
                 }
 				break;
-            case RAILCOM_CUTOUT_TCS_FLAG:
-                nCutoutStart = nBitStartSample+1;
-                break;
-            case RAILCOM_CUTOUT_TCE_FLAG:
-                break;
-            case RAILCOM_CUTOUT_END_FLAG:
-                mResults->AddMarker(nCutoutStart, AnalyzerResults::Dot, mSettings->mInputChannel);
-                mResults->AddMarker(nCurSample, AnalyzerResults::Dot, mSettings->mInputChannel);
-                PostFrame(nCutoutStart, nCurSample, FRAME_CUTOUT, 0, 0);
-                ReportProgress(nCurSample);
-                nFrameStart = nCurSample;
-                nPreambleStart = nFrameStart+1;
+            default: //anything not another 1 is just non-dcc
                 nHBitCnt = 0;
-                ef = FSTATE_INIT;
+                nFrameStart = nCurSample + 1;
+                nPreambleStart = nFrameStart;
                 break;
-            case RAILCOM_CUTOUT_FLAG:
-                nCutoutStart = nBitStartSample+1;
-                mResults->AddMarker(nCutoutStart, AnalyzerResults::Dot, mSettings->mInputChannel);
-                mResults->AddMarker(nCurSample, AnalyzerResults::Dot, mSettings->mInputChannel);
-                PostFrame(nCutoutStart, nCurSample, FRAME_CUTOUT, 0, 0);
-                ReportProgress(nCurSample);
-                nFrameStart = nCurSample;
-                nPreambleStart = nFrameStart+1;
-                nHBitCnt = 0;
-                ef = FSTATE_INIT;
-                break;
-			default: // error frame
-				nHBitCnt = 0;
-				nFrameStart = nCurSample + 1;
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-				mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-			}
-			break;
+            }
+            break;
+
+//          case 0: // 0 HBit causes a reset in preamble bit count
+//              nHBitCnt = 0;
+//              nFrameStart = nCurSample + 1;
+//              nPreambleStart = nFrameStart;
+//  			break;
+//  		default: // error frame
+//  			nHBitCnt = 0;
+//              nFrameStart = nCurSample + 1;
+//  			PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
+//  			mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
+//  			mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
+//  			ReportProgress(nCurSample);
 		case FSTATE_PREAMBLE:
 			nTemp = nCurSample;
 			nHBitVal = LookaheadNextHBit(&nTemp); // get next hbit
@@ -278,7 +243,7 @@ void DCCAnalyzer::WorkerThread()
 				PostFrame(nPreambleStart, nCurSample, FRAME_PREAMBLE, 0, nHBitCnt / 2);
 				ReportProgress(nCurSample);
 				nFrameStart = nCurSample + 1;
-				ef = FSTATE_SBADDR;
+				ef = FSTATE_PSBIT;
 				break;
 			case 1:
 				nHBitVal = GetNextHBit(&nCurSample); // get next hbit
@@ -293,16 +258,16 @@ void DCCAnalyzer::WorkerThread()
 				ef = FSTATE_INIT;
 			}
 			break;
-		case FSTATE_SBADDR:
+		case FSTATE_PSBIT:
 			nHBitVal = GetNextBit(&nCurSample); // get next hbit
             nHBitCnt = 0;   // resets the preamble bit count
 			if (nHBitVal == 0) { // this is the start bit, now we are in sync
-				PostFrame(nFrameStart, nCurSample, FRAME_SBIT, 0);
+				PostFrame(nFrameStart, nCurSample, FRAME_PSBIT, 0);
 				mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
 				ReportProgress(nCurSample);
 				nBits = nVal = 0;
 				nFrameStart = nCurSample + 1;
-				ef = FSTATE_ADDR;
+				ef = FSTATE_ADBYTE;
 			} else {
 				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
 				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
@@ -311,7 +276,7 @@ void DCCAnalyzer::WorkerThread()
 				ef = FSTATE_INIT;
 			}
 			break;
-		case FSTATE_ADDR:
+		case FSTATE_ADBYTE:
 			switch (nHBitVal = GetNextBit(&nCurSample))
 			{
 			case 0:
@@ -322,20 +287,8 @@ void DCCAnalyzer::WorkerThread()
 				if (nBits == 8)
 				{
 					nChecksum ^= nVal;
-					if (mSettings->mMode == DCCAnalyzerEnums::MODE_SERVICE)	{
-						PostFrame(nFrameStart, nCurSample, FRAME_SVC, 0, nVal);
-						ef = FSTATE_SBDAT;
-					} else {
-						PostFrame(nFrameStart, nCurSample, FRAME_ADDR, 0, nVal);
-						if ((nVal <= 0x7F) || (nVal == 0xFF))
-							ef = FSTATE_SBCMD;
-						else if ((nVal >= 0x80) && (nVal < 0xBF))
-							ef = FSTATE_SBACC;
-						else if ((nVal >= 0xC0) && (nVal < 0xE8))
-							ef = FSTATE_SBEADR;
-						else
-							ef = FSTATE_INIT; // undefined
-					}
+                    ef = FSTATE_DSBIT;
+                    PostFrame(nFrameStart, nCurSample, FRAME_ADBYTE, 0, nVal);
 					ReportProgress(nCurSample);
 					nFrameStart = nCurSample + 1;
 				}
@@ -349,140 +302,49 @@ void DCCAnalyzer::WorkerThread()
 				ef = FSTATE_INIT;
 			}
 			break;
-		case FSTATE_SBEADR:
-			nHBitVal = GetNextBit(&nCurSample); // get next bit
-			if (nHBitVal == 0) { // start bit
-				PostFrame(nFrameStart, nCurSample, FRAME_SBIT, 0);
-				mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nBits = nVal = 0;
-				nFrameStart = nCurSample + 1;
-				ef = FSTATE_EADR;
-			}
-			else {
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-
-		case FSTATE_EADR:
-			switch (nHBitVal = GetNextBit(&nCurSample))
-			{
-			case 0:
-			case 1:
-				nVal <<= 1;
-				nVal |= nHBitVal;
-				nBits++;
-				if (nBits == 8)
-				{
-					nChecksum ^= nVal;
-					PostFrame(nFrameStart, nCurSample, FRAME_EADDR, 0, nVal);
-					ReportProgress(nCurSample);
-					nFrameStart = nCurSample + 1;
-					ef = FSTATE_SBCMD;
-				}
-				break;
-			default:
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-				mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-		case FSTATE_SBCMD:
-			nHBitVal = GetNextBit(&nCurSample); // get next bit
-			if (nHBitVal == 0) { // start bit
-				PostFrame(nFrameStart, nCurSample, FRAME_SBIT, 0);
-				mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nBits = nVal = 0;
-				nFrameStart = nCurSample + 1;
-				ef = FSTATE_CMD;
-			}
-			else {
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-		case FSTATE_CMD:
-			switch (nHBitVal = GetNextBit(&nCurSample))
-			{
-			case 0:
-			case 1:
-				nVal <<= 1;
-				nVal |= nHBitVal;
-				nBits++;
-				if (nBits == 8)
-				{
-					nChecksum ^= nVal;
-					PostFrame(nFrameStart, nCurSample, FRAME_CMD, 0, nVal);
-					ReportProgress(nCurSample);
-					nFrameStart = nCurSample + 1;
-					ef = FSTATE_SBDAT;
-				}
-				break;
-			default:
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-				mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-        case FSTATE_SBDAT:
-			nHBitVal = GetNextBit(&nCurSample); // get next bit
-			if (nHBitVal == 0) { // start bit
-				PostFrame(nFrameStart, nCurSample, FRAME_SBIT, 0);
-				mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nBits = nVal = 0;
-				nFrameStart = nCurSample + 1;
-				ef = FSTATE_DATA;
-			}
-			else {
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-		case FSTATE_DATA:
-			switch (nHBitVal = GetNextBit(&nCurSample))
-			{
-			case 0:
-			case 1:
-				nVal <<= 1;
-				nVal |= nHBitVal;
-				nBits++;
-				if (nBits == 8)
-				{
-					nTemp = nCurSample;
-					nChecksum ^= nVal;
+        case FSTATE_DSBIT:
+            nHBitVal = GetNextBit(&nCurSample); // get next bit
+            if (nHBitVal == 0) { // start bit
+                PostFrame(nFrameStart, nCurSample, FRAME_DSBIT, 0);
+                mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
+                ReportProgress(nCurSample);
+                nBits = nVal = 0;
+                nFrameStart = nCurSample + 1;
+                ef = FSTATE_DBYTE;
+            }
+            else {
+                PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
+                mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
+                ReportProgress(nCurSample);
+                nHBitCnt = 0;
+                ef = FSTATE_INIT;
+            }
+            break;
+        case FSTATE_DBYTE:
+            switch (nHBitVal = GetNextBit(&nCurSample))
+            {
+            case 0:
+            case 1:
+                nVal <<= 1;
+                nVal |= nHBitVal;
+                nBits++;
+                if (nBits == 8)
+                {
+                    nTemp = nCurSample;
+                    nChecksum ^= nVal;
                     UINT nLABit = LookaheadNextHBit(&nTemp);
-					if (nLABit == 0) { //look for end of packet
-						PostFrame(nFrameStart, nCurSample, FRAME_DATA, 0, nVal);
-						ef = FSTATE_SBDAT;
-					} else if (nLABit == 1) {
-						nTemp = (nChecksum == 0) ? 0 : CHECKSUM_ERROR_FLAG;
-						PostFrame(nFrameStart, nCurSample, FRAME_CHECKSUM, nTemp, nVal);
-						if (nTemp != 0){
-							mResults->AddMarker(nFrameStart, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-							mResults->AddMarker(nCurSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-                            ef = FSTATE_INIT;
-						} else {
-                            ef = FSTATE_STOP;
-						}
-						nHBitCnt = 0;
+                    if (nLABit == 0) { //look for end of packet
+                        PostFrame(nFrameStart, nCurSample, FRAME_DBYTE, 0, nVal);
+                        ef = FSTATE_DSBIT;
+                    } else if (nLABit == 1) {
+                        nTemp = (nChecksum == 0) ? 0 : PACKET_ERROR_FLAG;
+                        PostFrame(nFrameStart, nCurSample, FRAME_EDBYTE, nTemp, nVal);
+                        if (nTemp != 0){    // mark the error but pass on the packet.
+                            mResults->AddMarker(nFrameStart, AnalyzerResults::ErrorX, mSettings->mInputChannel);
+                            mResults->AddMarker(nCurSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
+                        }
+                        ef = FSTATE_PEBIT;
+                        nHBitCnt = 0;
                     } else {
                         PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
                         mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
@@ -490,63 +352,20 @@ void DCCAnalyzer::WorkerThread()
                         nHBitCnt = 0;
                         ef = FSTATE_INIT;
                     }
-					ReportProgress(nCurSample);
-					nFrameStart = nCurSample + 1;
-				}
-				break;
-			case FSTATE_SBACC:
-				nHBitVal = GetNextBit(&nCurSample); // get next bit
-				if (nHBitVal == 0) { // start bit
-					PostFrame(nFrameStart, nCurSample, FRAME_SBIT, 0);
-					mResults->AddMarker(nFrameStart, AnalyzerResults::Start, mSettings->mInputChannel);
-					ReportProgress(nCurSample);
-					nBits = nVal = 0;
-					nFrameStart = nCurSample + 1;
-					ef = FSTATE_ACC;
-				} else {
-					PostFrame(nBitStartSample, nCurSample, FRAME_ERR, FRAMING_ERROR_FLAG);
-					mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorDot, mSettings->mInputChannel);
-					ReportProgress(nCurSample);
-					nHBitCnt = 0;
-					ef = FSTATE_INIT;
-				}
-				break;
-			case FSTATE_ACC:
-				switch (nHBitVal = GetNextBit(&nCurSample))
-				{
-				case 0:
-				case 1:
-					nVal <<= 1;
-					nVal |= nHBitVal;
-					nBits++;
-					if (nBits == 8)
-					{
-						nChecksum ^= nVal;
-						PostFrame(nFrameStart, nCurSample, FRAME_ACC, 0, nVal);
-						ReportProgress(nCurSample);
-						nFrameStart = nCurSample + 1;
-						ef = FSTATE_SBDAT;
-					}
-					break;
-				default:
-					PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-					mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-					mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-					ReportProgress(nCurSample);
-					nHBitCnt = 0;
-					ef = FSTATE_INIT;
-				}
-				break;
-			default:
-				PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
-				mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-				mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-				ReportProgress(nCurSample);
-				nHBitCnt = 0;
-				ef = FSTATE_INIT;
-			}
-			break;
-        case FSTATE_STOP:
+                    ReportProgress(nCurSample);
+                    nFrameStart = nCurSample + 1;
+                }
+                break;
+            default:
+                PostFrame(nBitStartSample, nCurSample, FRAME_ERR, nHBitVal);
+                mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
+                mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
+                ReportProgress(nCurSample);
+                nHBitCnt = 0;
+                ef = FSTATE_INIT;
+            }
+            break;
+        case FSTATE_PEBIT:
             nHBitVal = GetNextBit(&nCurSample); // get next hbit
             nTemp = nCurSample;
             PostFrame(nFrameStart, nCurSample, FRAME_PEBIT, 0);
@@ -559,9 +378,7 @@ void DCCAnalyzer::WorkerThread()
             case 1:
                 nHBitCnt = 2;       // marks the case where the next bit might be preamble and we need to count it.
                 break;
-            case 0:
-            case RAILCOM_CUTOUT_TCS_FLAG:
-            case RAILCOM_CUTOUT_FLAG:
+            default:
                 nHBitCnt = 0;       // no preamble next so don't count these bits as preamble
                 break;
             }

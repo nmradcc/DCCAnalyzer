@@ -4,25 +4,19 @@
 #include <AnalyzerResults.h>
 
 #define BIT_ERROR_FLAG ( 1 << 1 )
-#define CHECKSUM_ERROR_FLAG ( 1 << 2 )
+#define PACKET_ERROR_FLAG ( 1 << 2 )
 #define FRAMING_ERROR_FLAG (1 << 3)
-#define RAILCOM_CUTOUT_FLAG ( 1 << 4 )
-#define RAILCOM_CUTOUT_TCS_FLAG ( 1 << 5 )
-#define RAILCOM_CUTOUT_TCE_FLAG ( 1 << 6 )
-#define RAILCOM_CUTOUT_END_FLAG ( 1 << 7 )
+
 enum eFrameType { 
-    FRAME_ERR, 
     FRAME_PREAMBLE, 
-    FRAME_CUTOUT,
-    FRAME_SBIT,
-    FRAME_ADDR,
-    FRAME_EADDR,
-    FRAME_CMD,
-    FRAME_ACC,
-    FRAME_SVC,
-    FRAME_DATA,
-    FRAME_CHECKSUM,
-    FRAME_PEBIT
+    FRAME_PSBIT,
+    FRAME_ADBYTE,
+    FRAME_DSBIT,
+    FRAME_DBYTE,
+    FRAME_EDBYTE,
+    FRAME_PEBIT,
+    FRAME_ERR,
+    FRAME_END_ERR
 };
 
 class DCCAnalyzer;
@@ -40,11 +34,6 @@ public:
     virtual void GenerateFrameTabularText(U64 frame_index, DisplayBase display_base);
     virtual void GeneratePacketTabularText(U64 packet_id, DisplayBase display_base);
     virtual void GenerateTransactionTabularText(U64 transaction_id, DisplayBase display_base);
-
-protected: //functions
-	virtual char * ParseCommand(U8 cCmd);
-	virtual char * ParseAccessory(U8 cCmd);
-	virtual char * ParseServiceMode(U8 cCmd, bool bLongPacket);
 
 protected:  //vars
     DCCAnalyzerSettings *mSettings;

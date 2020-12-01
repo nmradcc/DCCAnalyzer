@@ -1,6 +1,12 @@
 .DS_Store
+__pycache__
 /build
 /src/Debug
+DCCAnalyzer.vpj
+DCCAnalyzer.vpw
+DCCAnalyzer.vpwhistu
+DCCAnalyzer.vtg
 /build.save
 /cmake
+*.graffle
 
