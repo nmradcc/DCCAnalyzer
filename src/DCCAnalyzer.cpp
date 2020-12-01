@@ -37,14 +37,17 @@ UINT DCCAnalyzer::LookaheadNextHBit(U64 *nSample)
 		return 1;
 	else if (nHBitLen >= mMin0hbit && nHBitLen <= mMax0hbit)
 		return 0;
-	else
+    else if (nHBitLen >=mMinPEHold && nHBitLen <= mMaxPGap) {
+        return 3;
+    } else
 		return BIT_ERROR_FLAG; // bit error
 }
 
 bool DCCAnalyzer::CheckPacketEndHold(U64 *nSample)
 {
 	UINT nHBitLen = (UINT)(mDCC->GetSampleOfNextEdge() - *nSample);
-	*nSample = mDCC->GetSampleOfNextEdge();
+//	*nSample = mDCC->GetSampleOfNextEdge();
+//    if (nHBitLen >= mMinPEHold && nHBitLen < mMaxPGap)
     if (nHBitLen >= mMinPEHold)
 		return true;
 	else
@@ -161,6 +164,7 @@ void DCCAnalyzer::Setup()
     //
 	mMaxBitLen = round(12000.0 * dSamplesPerMicrosecond * dMaxCorrection);
     mMinPEHold = round(   26.0 * dSamplesPerMicrosecond * dMinCorrection);
+    mMaxPGap   = round(30000.0 * dSamplesPerMicrosecond * dMaxCorrection);
 	switch (mSettings->mMode)
 	{
 	case DCCAnalyzerEnums::MODE_CS:
@@ -374,18 +378,9 @@ void DCCAnalyzer::WorkerThread()
             case 1:
                 nHBitCnt = 2;       // marks the case where the next bit might be preamble and we need to count it.
                 break;
-            case 0:
+            default:
                 nHBitCnt = 0;       // no preamble next so don't count these bits as preamble
                 break;
-            }
-            if (mSettings->mMode == DCCAnalyzerEnums::MODE_CS) {
-                if (not CheckPacketEndHold(&nTemp)) {
-                    PostFrame(nBitStartSample, nCurSample, FRAME_END_ERR, nHBitVal);
-                    mResults->AddMarker(nBitStartSample, AnalyzerResults::ErrorSquare, mSettings->mInputChannel);
-                    mResults->AddMarker(nCurSample, AnalyzerResults::ErrorX, mSettings->mInputChannel);
-                    ReportProgress(nCurSample);
-                    nHBitCnt = 0;
-                }
             }
             ef = FSTATE_INIT;
             break;

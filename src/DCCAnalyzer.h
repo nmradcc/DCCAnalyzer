@@ -65,7 +65,8 @@ protected: //vars
 	UINT mMin0hbit;         // Minimum 0 half bit length (microseconds)
 	UINT mMax0hbit;         // Maximum 0 half bit length (microseconds)
 	UINT mMaxBitLen;        // overall maximum DCC bit length
-    UINT mMinPEHold;        // minimum time the DCC bitstream has to stay active past the Packet End Bit
+    UINT mMinPEHold;        // Minimum time the DCC bitstream has to stay active past the Packet End Bit
+    UINT mMaxPGap;          // Maximum Packet Gap
 #pragma warning( pop )
 };
 
