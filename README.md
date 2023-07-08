@@ -106,3 +106,7 @@ cmake ..
 ```
 
 Then, open the newly created solution file located here: `build\dcc_analyzer.sln`
+
+# Important Note
+
+Do NOT connect the Saleae analyzer probes directly to either the DCC Command Station, DCC Power Station outputs, or the track. You MUST use a suitable method per the Saleae input specifications, for adequately conditioning the voltage levels. For the development of this code, the NMRA testing team used a passive-input digital isolator with a CMOS output to convert the differential DCC signal to a single-ended CMOS digital input suitable for the Saleae logic input. This device is the NVE Corporation IL610 (https://www.nve.com/Downloads/il600.pdf). IMPORTANT: the input coil of the IL610 requires a 1K series current-limiting resistor. You will need to power the CMOS output side of the IL610 with 5V. A USB breakout adapter and a small breadboard can be used to build this circuit fairly easily.
