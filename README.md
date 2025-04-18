@@ -1,6 +1,6 @@
 # DCCAnalyzer v0.0.7
 
-This repository is for maintaining the software associated with decoding DCC packets using a Salear logic analyzer.
+This repository is for maintaining the software associated with decoding DCC packets using a Saleae logic analyzer.
 
 The nmradcc/DCCAnalyzer/src directory contains the source code for the parsing functions necessary.
 
