@@ -3,7 +3,7 @@
 <img src="img/nmra.png"><br><br>
 </center>
 
-# NMRA DCCAnalyzer Plugin v0.0.9
+# NMRA DCCAnalyzer Plugin v0.0.10
 
 A low level DCC Decoder plugin for Saleae Logic analyzers.  If you own a Saleae Logic 8, Logic Pro 8, or Logic pro 16 analyzer you may install this plugin to display decoded DCC frames above your captured signals.
 
@@ -84,44 +84,26 @@ Follow these steps to build for Linux Ubuntu
 3. Download the latest gcc compiler available at: https://gcc.gnu.org.  Note: this should have been installed automatically when *build-essential* was installed.
 
 ### Building the analyzer
-Open a terminal at the root of the project
+Open a terminal at the root of the project and execute the following commands:
 * mkdir build
 * cd build
 * cmake ..
 * cmake --build .
 
-### Windows
+## Windows
+Follow these steps to build DCCAnalyzer plugin for Windows.
 
-Dependencies:
+1. Install the latest version of Visual Studio Community or Visual Studio Code available at: https://visualstudio.microsoft.com/.  Either will work.
+2. Install the latest version of CMake available at: https://cmake.org/download/.
+3. Configure Visual Studio for C++ development.  
 
-- [Visual Studio 2015 Update 3](https://visualstudio.microsoft.com/)
-- [CMake 3.11+](https://cmake.org/download/)
-
-**Visual Studio 2015**
-
-_Note - newer versions of Visual Studio should be fine._
-
-Setup options:
-
-- Programming Languages > Visual C++ > select all sub-components.
-
-Note - if CMake has any problems with the MSVC compiler, it's likely a component is missing.
-
-**CMake**
-
-Download and install the latest CMake release here.
-https://cmake.org/download/
-
-**Building the analyzer:**
+### Building the analyzer
+The first build must be done from the command line.  This build creates a Visual Studio *solutions* file.  Open a terminal in the root of the project and issue the following commands:
 
 ```bat
 mkdir build
 cd build
 cmake ..
 ```
+You may continue to build from the command line or, if preferred, use Visual Studio or Visual Studio Code.  In this case open the newly created solution file located in the build directory.
 
-Then, open the newly created solution file located here: `build\dcc_analyzer.sln`
-
-# Important Note
-
-Do NOT connect the Saleae analyzer probes directly to either the DCC Command Station, DCC Power Station outputs, or the track. You MUST use a suitable method per the Saleae input specifications, for adequately conditioning the voltage levels. For the development of this code, the NMRA testing team used a passive-input digital isolator with a CMOS output to convert the differential DCC signal to a single-ended CMOS digital input suitable for the Saleae logic input. This device is the NVE Corporation IL610 (https://www.nve.com/Downloads/il600.pdf). IMPORTANT: the input coil of the IL610 requires a 1K series current-limiting resistor. You will need to power the CMOS output side of the IL610 with 5V. A USB breakout adapter and a small breadboard can be used to build this circuit fairly easily.
