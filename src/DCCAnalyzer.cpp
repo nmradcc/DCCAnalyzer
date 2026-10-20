@@ -12,6 +12,7 @@ DCCAnalyzer::DCCAnalyzer()
       mSimulationInitilized(false)
 {
     SetAnalyzerSettings(mSettings.get());
+    UseFrameV2();
 }
 
 DCCAnalyzer::~DCCAnalyzer()
